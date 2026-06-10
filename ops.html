@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Live Ops — Real Estate Autopilot</title>
+<meta name="description" content="The whole operation on one board — live lead flow, agent load, deals in flight, and the feed of what the crew shipped.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23e3b54e'/%3E%3Ctext x='32' y='39' font-family='Arial' font-style='italic' font-weight='800' font-size='19' fill='%23070b14' text-anchor='middle'%3EREA%3C/text%3E%3C/svg%3E">
+<script>try{if(localStorage.getItem("rai-theme")==="light")document.documentElement.setAttribute("data-theme","light")}catch(e){}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400..800;1,400..800&family=Figtree:ital,wght@0,400..700;1,400..700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/core.css">
+<style>
+/* ============ ops.html — Live Ops board ============ */
+.ops-sec-head { padding-bottom: 0; }
+.ops-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 32px; flex-wrap: wrap; }
+.ops-head-sub { margin-top: 16px; letter-spacing: 0.08em; }
+.ops-head-right { display: flex; flex-direction: column; align-items: flex-end; gap: 12px; text-align: right; }
+.ops-clock-label { font-family: var(--f-label); font-weight: 600; font-size: 10.5px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--t-low); }
+.ops-clock {
+  font-family: var(--f-label); font-weight: 600; font-variant-numeric: tabular-nums;
+  font-size: clamp(1.8rem, 3.4vw, 2.6rem); line-height: 1; letter-spacing: 0.03em;
+  color: var(--t-hi);
+}
+.ops-clock-sec { color: var(--gold); }
+
+.ops-sec-board { padding: 48px 0 0; }
+.ops-kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+.ops-kpi-body { position: relative; z-index: 1; }
+.ops-kpi-spark { position: absolute; right: 14px; bottom: 10px; width: 96px; height: 28px; opacity: 0.45; pointer-events: none; }
+
+.ops-board { display: grid; grid-template-columns: repeat(12, 1fr); gap: 22px; margin-top: 22px; }
+.ops-col-7 { grid-column: span 7; }
+.ops-col-5 { grid-column: span 5; }
+.ops-panel { padding: 26px 28px; position: relative; display: flex; flex-direction: column; }
+.ops-panel-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  padding-bottom: 15px; margin-bottom: 18px; border-bottom: 1px solid var(--line);
+}
+.ops-title { font-family: var(--f-display); font-weight: 560; font-size: 1.22rem; letter-spacing: -0.01em; color: var(--t-hi); }
+
+/* lead-flow chart */
+.ops-chart svg { width: 100%; height: auto; }
+.ops-chart text { font-family: var(--f-label); font-weight: 600; font-size: 10px; letter-spacing: 0.06em; fill: var(--t-low); }
+.ops-chart .lf-today { fill: var(--gold); letter-spacing: 0.16em; }
+.lf-area { opacity: 0; transition: opacity 0.9s ease 0.5s; }
+.lf-under { opacity: 0; transition: opacity 1.1s ease 0.35s; }
+.lf-dot { opacity: 0; transition: opacity 0.45s ease; transition-delay: var(--dd, 0s); }
+.ops-chart.drawn .lf-area, .ops-chart.drawn .lf-under, .ops-chart.drawn .lf-dot { opacity: 1; }
+
+/* agent utilization */
+.ops-util-row { display: grid; grid-template-columns: 36px 100px 1fr 46px; align-items: center; gap: 14px; padding: 9px 0; }
+.ops-util-row + .ops-util-row { border-top: 1px solid color-mix(in srgb, var(--t-hi) 4%, transparent); }
+.ops-util-row .prog-fill { transition: width 0.9s cubic-bezier(0.22, 1, 0.36, 1); }
+.ops-util-pct { text-align: right; color: var(--t-mid); transition: color 0.45s ease; }
+.ops-util-pct.ops-flash { color: var(--gold-soft); }
+
+/* live feed */
+.ops-feed { max-height: 460px; overflow-y: auto; padding-right: 8px; margin-right: -8px; }
+.ops-feed-item {
+  display: flex; align-items: flex-start; gap: 14px; padding: 13px 2px;
+  border-bottom: 1px solid color-mix(in srgb, var(--t-hi) 5%, transparent);
+}
+.ops-feed-item:last-child { border-bottom: 0; }
+.ops-feed-new { animation: opsFeedIn 0.55s cubic-bezier(0.22, 1, 0.36, 1) both; }
+@keyframes opsFeedIn { from { opacity: 0; transform: translateY(-12px); } to { opacity: 1; transform: none; } }
+.ops-feed-text { flex: 1; font-size: 0.86rem; line-height: 1.5; color: var(--t-mid); }
+.ops-feed-text b {
+  display: block; font-family: var(--f-label); font-size: 10px; font-weight: 600;
+  letter-spacing: 0.13em; text-transform: uppercase; color: var(--ac); margin-bottom: 3px;
+}
+.ops-feed-ts { flex: none; padding-top: 2px; }
+
+/* deals in flight */
+.ops-deal {
+  display: grid; grid-template-columns: minmax(150px, 1.4fr) auto minmax(90px, 1fr) auto;
+  grid-template-areas: "addr stage prog meta";
+  align-items: center; gap: 18px; padding: 13px 14px; margin: 0 -14px;
+  border-radius: var(--r-sm); transition: background-color 0.25s ease;
+}
+.ops-deal:hover { background: color-mix(in srgb, var(--t-hi) 4%, transparent); }
+.ops-deal + .ops-deal { border-top: 1px solid color-mix(in srgb, var(--t-hi) 4%, transparent); }
+.ops-deal-addr { grid-area: addr; min-width: 0; }
+.ops-deal-addr .small { display: block; margin-top: 1px; }
+.ops-stage { grid-area: stage; justify-self: start; border: 1px solid; color: color-mix(in srgb, var(--ac) 75%, var(--t-hi)); }
+.ops-stage i { width: 6px; height: 6px; border-radius: 50%; background: currentColor; animation: blink 0.9s ease-in-out infinite alternate; }
+.ops-deal .prog { grid-area: prog; }
+.ops-deal .prog-fill { transition: width 1.1s cubic-bezier(0.22, 1, 0.36, 1); }
+.ops-deal-meta { grid-area: meta; text-align: right; line-height: 1.5; }
+.ops-deal-price { display: block; color: var(--t-hi); font-size: 0.92rem; }
+
+/* bottom ticker */
+.ops-ticker {
+  border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
+  padding: 17px 0; background: color-mix(in srgb, var(--ink-0) 60%, transparent);
+}
+.ops-tk { display: inline-flex; align-items: center; white-space: nowrap; color: var(--t-mid); }
+.ops-tk::before {
+  content: ""; width: 5px; height: 5px; flex: none;
+  background: var(--gold); opacity: 0.65; transform: rotate(45deg); margin-right: 20px;
+}
+.ops-tk b { font-weight: 600; letter-spacing: 0.14em; margin-right: 10px; }
+
+@media (max-width: 1020px) {
+  .ops-col-7, .ops-col-5 { grid-column: 1 / -1; }
+}
+@media (max-width: 960px) {
+  .ops-kpis { grid-template-columns: repeat(2, 1fr); }
+  .ops-head-right { align-items: flex-start; text-align: left; }
+}
+@media (max-width: 600px) {
+  .ops-kpis { grid-template-columns: 1fr; }
+  .ops-deal { grid-template-columns: 1fr auto; grid-template-areas: "addr stage" "prog prog" "meta meta"; row-gap: 10px; }
+  .ops-deal-meta { text-align: left; }
+  .ops-deal-meta .ops-deal-price { display: inline; margin-right: 10px; }
+  .ops-util-row { grid-template-columns: 36px 86px 1fr 42px; gap: 10px; }
+}
+</style>
+</head>
+<body>
+
+<div class="bg" aria-hidden="true">
+  <div class="bg-grid"></div>
+  <div class="orb orb-a"></div>
+  <div class="orb orb-b"></div>
+  <div class="orb orb-c"></div>
+  <div class="bg-noise"></div>
+</div>
+
+<header class="nav">
+  <a class="nav-logo" href="index.html" aria-label="Real Estate Autopilot home">
+    <span class="logo-mark">REA</span>
+    <span class="logo-word">Real&nbsp;Estate&nbsp;<b>Autopilot</b></span>
+  </a>
+  <nav class="nav-links" aria-label="Primary">
+    <a href="index.html">Mission Control</a>
+    <a href="agents.html">Agents</a>
+    <a href="playbooks.html">Playbooks</a>
+    <a href="ops.html">Live Ops</a>
+  </nav>
+  <div class="nav-right">
+    <span class="status-chip"><i class="pulse-dot"></i>12 agents online</span>
+    <a class="btn btn-gold btn-sm" href="index.html#console">Deploy a task</a>
+  </div>
+</header>
+
+<main class="page">
+
+  <!-- ===== Header ===== -->
+  <section class="section-tight ops-sec-head">
+    <div class="wrap ops-head">
+      <div class="reveal">
+        <div class="eyebrow">Live Ops</div>
+        <h1 class="h-1">The whole operation. <em>One glance.</em></h1>
+        <p class="mono small faint ops-head-sub">Twelve agents reporting &middot; the board updates itself</p>
+      </div>
+      <div class="ops-head-right reveal" style="--d:.12s">
+        <span class="ops-clock-label">Indianapolis / ET</span>
+        <div class="ops-clock"><span id="ops-clock-hm">--:--</span><span class="ops-clock-sec" id="ops-clock-ss">:--</span></div>
+        <span class="status-chip"><i class="pulse-dot"></i>All systems nominal</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== KPI row + board ===== -->
+  <section class="ops-sec-board">
+    <div class="wrap">
+      <div class="ops-kpis" id="ops-kpis"></div>
+
+      <div class="ops-board">
+
+        <article class="glass ops-panel ops-col-7 reveal" id="ops-chart-panel">
+          <div class="ops-panel-head">
+            <h2 class="ops-title">Lead flow — last 14 days</h2>
+            <span class="mono small faint" id="ops-chart-sum"></span>
+          </div>
+          <div class="ops-chart" id="ops-chart"></div>
+        </article>
+
+        <article class="glass ops-panel ops-col-5 reveal" style="--d:.08s" id="ops-util-panel">
+          <div class="ops-panel-head">
+            <h2 class="ops-title">Agent utilization</h2>
+            <span class="mono small faint">load by agent</span>
+          </div>
+          <div id="ops-util"></div>
+        </article>
+
+        <article class="glass ops-panel ops-col-5 reveal" style="--d:.12s" id="feed">
+          <div class="ops-panel-head">
+            <h2 class="ops-title">Live feed</h2>
+            <span class="status-chip"><i class="pulse-dot"></i>live</span>
+          </div>
+          <div class="ops-feed" id="ops-feed"></div>
+        </article>
+
+        <article class="glass ops-panel ops-col-7 reveal" style="--d:.16s" id="ops-deals-panel">
+          <div class="ops-panel-head">
+            <h2 class="ops-title">Deals in flight</h2>
+            <span class="mono small faint" id="ops-deals-sum"></span>
+          </div>
+          <div id="ops-deals"></div>
+        </article>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Ticker ===== -->
+  <section class="section-tight">
+    <div class="ops-ticker reveal">
+      <div class="marquee" aria-hidden="true">
+        <div class="marquee-track mono small" id="ops-ticker-track"></div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <a class="nav-logo" href="index.html"><span class="logo-mark">REA</span></a>
+      <p>The twelve-agent operations team behind Devan Lunceford Real Estate, Indianapolis. One command post. Zero dropped balls.</p>
+    </div>
+    <div>
+      <h5>Platform</h5>
+      <nav class="footer-links">
+        <a href="index.html">Mission Control</a>
+        <a href="agents.html">The Roster</a>
+        <a href="playbooks.html">Playbooks</a>
+        <a href="ops.html">Live Ops</a>
+      </nav>
+    </div>
+    <div>
+      <h5>Command</h5>
+      <nav class="footer-links">
+        <a href="index.html#console">Deploy a task</a>
+        <a href="agents.html">Open a dossier</a>
+        <a href="playbooks.html">Run a playbook</a>
+        <a href="ops.html#feed">Watch the feed</a>
+      </nav>
+    </div>
+    <div class="footer-meta">
+      <span class="sys"><i class="pulse-dot"></i>All systems nominal</span>
+      <span>Real Estate Autopilot · Indianapolis · <span id="ft-year"></span></span>
+    </div>
+  </div>
+</footer>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/shared.js"></script>
+<script>
+(function () {
+  "use strict";
+  if (!window.RAI || !window.RAIUI || window.__raiOps) return;
+  window.__raiOps = true;
+
+  var RM = RAIUI.reduceMotion;
+  var TEAL = "var(--signal)";               /* theme-aware signal teal — CSS vars work in SVG attributes */
+
+  function pad2(n) { return String(n).padStart(2, "0"); }
+
+  function onRevealed(el, fn) {
+    if (RM || !("IntersectionObserver" in window)) { fn(); return; }
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) { io.disconnect(); fn(); }
+      });
+    }, { threshold: 0.2 });
+    io.observe(el);
+  }
+
+  function avatarSm(agent) {
+    return '<div class="avatar avatar-sm"><svg viewBox="0 0 24 24" aria-hidden="true">' + agent.icon + "</svg></div>";
+  }
+
+  /* ---------- Live clock ---------- */
+  (function () {
+    var hm = document.getElementById("ops-clock-hm");
+    var ss = document.getElementById("ops-clock-ss");
+    if (!hm || !ss) return;
+    function tick() {
+      var p = new Intl.DateTimeFormat("en-US", { timeZone: "America/Indiana/Indianapolis", hour12: false, hour: "2-digit", minute: "2-digit", second: "2-digit" }).format(new Date()).split(":");
+      hm.textContent = p[0] + ":" + p[1];
+      ss.textContent = ":" + p[2];
+    }
+    tick();
+    if (!RM) setInterval(tick, 1000);
+  })();
+
+  /* ---------- KPI tiles ---------- */
+  (function () {
+    var host = document.getElementById("ops-kpis");
+    if (!host) return;
+    RAI.kpis.forEach(function (k, i) {
+      var falling = /^\s*-/.test(k.delta);
+      var tri = falling
+        ? '<svg width="9" height="8" viewBox="0 0 9 8" aria-hidden="true"><path d="M4.5 7.5 0.5 0.5h8z" fill="currentColor"/></svg>'
+        : '<svg width="9" height="8" viewBox="0 0 9 8" aria-hidden="true"><path d="M4.5 0.5 8.5 7.5h-8z" fill="currentColor"/></svg>';
+      var tile = document.createElement("article");
+      tile.className = "kpi reveal";
+      tile.style.setProperty("--d", (i * 0.07).toFixed(2) + "s");
+      tile.innerHTML =
+        '<div class="ops-kpi-body">' +
+          '<div class="kpi-label">' + k.label + "</div>" +
+          '<div class="kpi-value"><span data-count="' + k.value + '"' +
+            (k.prefix ? ' data-prefix="' + k.prefix + '"' : "") + ">0</span>" +
+            (k.unit ? '<span class="unit">' + k.unit + "</span>" : "") +
+          "</div>" +
+          '<div class="kpi-delta ' + (k.dir === "down" ? "down" : "up") + '">' + tri + "<span>" + k.delta + "</span></div>" +
+        "</div>" +
+        '<div class="ops-kpi-spark"></div>';
+      host.appendChild(tile);
+      RAIUI.spark(tile.querySelector(".ops-kpi-spark"), k.spark, {
+        color: k.dir === "down" ? "var(--danger)" : TEAL, w: 96, h: 28
+      });
+    });
+  })();
+
+  /* ---------- Lead flow area chart ---------- */
+  (function () {
+    var panel = document.getElementById("ops-chart-panel");
+    var host = document.getElementById("ops-chart");
+    var sumEl = document.getElementById("ops-chart-sum");
+    var data = RAI.leadflow;
+    if (!panel || !host || !data || data.length < 2) return;
+
+    if (sumEl) sumEl.textContent = data.reduce(function (a, b) { return a + b; }, 0) + " leads / 14 days";
+
+    var W = 680, H = 290, PL = 46, PR = 18, PT = 16, PB = 34;
+    var n = data.length;
+    var yMax = Math.ceil(Math.max.apply(null, data) / 6) * 6;
+    function X(i) { return +(PL + i * (W - PL - PR) / (n - 1)).toFixed(1); }
+    function Y(v) { return +(PT + (1 - v / yMax) * (H - PT - PB)).toFixed(1); }
+
+    var grid = '<line x1="' + PL + '" y1="' + Y(0) + '" x2="' + (W - PR) + '" y2="' + Y(0) + '" style="stroke:var(--line-strong)" stroke-width="1"/>';
+    for (var g = 6; g <= yMax; g += 6) {
+      grid += '<line x1="' + PL + '" y1="' + Y(g) + '" x2="' + (W - PR) + '" y2="' + Y(g) + '" style="stroke:var(--line)" stroke-opacity="0.6" stroke-width="1"/>' +
+              '<text x="' + (PL - 10) + '" y="' + (Y(g) + 3) + '" text-anchor="end">' + g + "</text>";
+    }
+
+    var labels = "";
+    [1, 5, 9, 13].forEach(function (i) {
+      var d = new Date();
+      d.setDate(d.getDate() - (13 - i));
+      var last = i === 13;
+      labels += '<text x="' + X(i) + '" y="' + (H - 10) + '" text-anchor="' + (last ? "end" : "middle") + '"' +
+                (last ? ' class="lf-today"' : "") + ">" + (last ? "TODAY" : (d.getMonth() + 1) + "/" + d.getDate()) + "</text>";
+    });
+
+    var lineD = data.map(function (v, i) { return (i ? "L" : "M") + X(i) + " " + Y(v); }).join(" ");
+    var areaD = lineD + " L" + X(n - 1) + " " + Y(0) + " L" + X(0) + " " + Y(0) + " Z";
+
+    var dots = data.map(function (v, i) {
+      var last = i === n - 1;
+      var halo = last ? '<circle class="lf-dot" style="--dd:1.5s" cx="' + X(i) + '" cy="' + Y(v) + '" r="9" fill="' + TEAL + '" fill-opacity="0.16"/>' : "";
+      return halo +
+        '<circle class="lf-dot" style="--dd:' + (0.55 + i * 0.06).toFixed(2) + 's" cx="' + X(i) + '" cy="' + Y(v) + '" r="' + (last ? 4 : 3) + '"' +
+        (last ? ' fill="' + TEAL + '"' : ' fill="var(--ink-1)" stroke="' + TEAL + '" stroke-width="1.6"') + "/>";
+    }).join("");
+
+    host.innerHTML =
+      '<svg viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="Daily lead counts, last 14 days">' +
+      '<defs><linearGradient id="opsLfGrad" x1="0" y1="0" x2="0" y2="1">' +
+      '<stop offset="0" stop-color="' + TEAL + '" stop-opacity="0.26"/>' +
+      '<stop offset="1" stop-color="' + TEAL + '" stop-opacity="0"/></linearGradient></defs>' +
+      grid + labels +
+      '<path class="lf-area" d="' + areaD + '" fill="url(#opsLfGrad)"/>' +
+      '<path class="lf-under" d="' + lineD + '" fill="none" stroke="' + TEAL + '" stroke-opacity="0.18" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>' +
+      '<path class="lf-line" d="' + lineD + '" fill="none" stroke="' + TEAL + '" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>' +
+      dots +
+      "</svg>";
+
+    var line = host.querySelector(".lf-line");
+    if (RM || !line || typeof line.getTotalLength !== "function") {
+      host.classList.add("drawn");
+      return;
+    }
+    var len = line.getTotalLength();
+    line.style.strokeDasharray = len + " " + len;
+    line.style.strokeDashoffset = len;
+    line.style.transition = "stroke-dashoffset 1.8s cubic-bezier(0.22, 1, 0.36, 1)";
+    onRevealed(panel, function () {
+      host.classList.add("drawn");
+      requestAnimationFrame(function () {
+        requestAnimationFrame(function () { line.style.strokeDashoffset = "0"; });
+      });
+    });
+  })();
+
+  /* ---------- Agent utilization ---------- */
+  (function () {
+    var panel = document.getElementById("ops-util-panel");
+    var host = document.getElementById("ops-util");
+    if (!panel || !host) return;
+
+    var rows = [
+      "lead-concierge", "investor-matcher", "funnel-manager", "market-analyst",
+      "listing-marketer", "transaction-coordinator", "pipeline-analyst", "bookkeeper"
+    ].map(function (id) {
+      var a = RAI.getAgent(id);
+      return a ? { a: a, val: Math.max(18, Math.min(96, Math.round(a.stats.deploys * 1.6))) } : null;
+    }).filter(Boolean).sort(function (x, y) { return y.val - x.val; });
+
+    rows.forEach(function (r) {
+      var el = document.createElement("div");
+      el.className = "ops-util-row";
+      el.style.setProperty("--ac", RAI.color(r.a));
+      el.style.setProperty("--ac2", RAI.color(r.a, 75));
+      el.innerHTML =
+        avatarSm(r.a) +
+        '<span class="codename">' + r.a.codename + "</span>" +
+        '<div class="prog"><div class="prog-fill"></div></div>' +
+        '<span class="ops-util-pct mono small">0%</span>';
+      host.appendChild(el);
+      r.fill = el.querySelector(".prog-fill");
+      r.pct = el.querySelector(".ops-util-pct");
+    });
+
+    function setBar(r) {
+      r.fill.style.width = r.val + "%";
+      r.pct.textContent = r.val + "%";
+    }
+
+    onRevealed(panel, function () {
+      rows.forEach(function (r, i) {
+        if (RM) { setBar(r); return; }
+        setTimeout(function () { setBar(r); }, i * 90);
+      });
+      if (RM) return;
+      setInterval(function () {
+        var r = rows[Math.floor(Math.random() * rows.length)];
+        var delta = (Math.random() < 0.5 ? -1 : 1) * (2 + Math.round(Math.random() * 4));
+        r.val = Math.max(18, Math.min(96, r.val + delta));
+        setBar(r);
+        r.pct.classList.add("ops-flash");
+        setTimeout(function () { r.pct.classList.remove("ops-flash"); }, 700);
+      }, 4200);
+    });
+  })();
+
+  /* ---------- Live activity feed ---------- */
+  (function () {
+    var host = document.getElementById("ops-feed");
+    if (!host || !RAI.feed.length) return;
+
+    var recent = [];
+    function pickFeed() {
+      var idx, tries = 0;
+      do {
+        idx = Math.floor(Math.random() * RAI.feed.length);
+        tries++;
+      } while (recent.indexOf(idx) !== -1 && tries < 40);
+      recent.push(idx);
+      if (recent.length > 5) recent.shift();
+      return RAI.feed[idx];
+    }
+
+    function feedItem(entry, ts, fresh) {
+      var a = RAI.getAgent(entry.agentId);
+      var el = document.createElement("div");
+      el.className = "ops-feed-item" + (fresh && !RM ? " ops-feed-new" : "");
+      if (a) {
+        el.style.setProperty("--ac", RAI.color(a));
+        el.style.setProperty("--ac2", RAI.color(a, 75));
+      }
+      el.innerHTML =
+        (a ? avatarSm(a) : "") +
+        '<div class="ops-feed-text"><b>' + (a ? a.codename : "OPS") + "</b>" + entry.text + "</div>" +
+        '<span class="ops-feed-ts mono small faint">' + ts + "</span>";
+      return el;
+    }
+
+    var t = Date.now();
+    for (var i = 0; i < 6; i++) {
+      t -= 40000 + Math.random() * 55000;
+      var d = new Date(t);
+      host.appendChild(feedItem(pickFeed(), pad2(d.getHours()) + ":" + pad2(d.getMinutes()) + ":" + pad2(d.getSeconds()), false));
+    }
+
+    if (RM) return;
+    (function schedule() {
+      setTimeout(function () {
+        host.insertBefore(feedItem(pickFeed(), RAIUI.timeStamp(), true), host.firstChild);
+        while (host.children.length > 30) host.removeChild(host.lastChild);
+        schedule();
+      }, 3000 + Math.random() * 2000);
+    })();
+  })();
+
+  /* ---------- Deals in flight ---------- */
+  (function () {
+    var panel = document.getElementById("ops-deals-panel");
+    var host = document.getElementById("ops-deals");
+    var sumEl = document.getElementById("ops-deals-sum");
+    if (!panel || !host) return;
+
+    var deals = RAI.deals.slice().sort(function (a, b) { return b.pct - a.pct; });
+
+    if (sumEl) {
+      var volK = deals.reduce(function (a, d) {
+        return a + (parseInt(String(d.price).replace(/[^\d]/g, ""), 10) || 0);
+      }, 0);
+      sumEl.textContent = deals.length + " active · $" + (volK / 1000).toFixed(1) + "M volume";
+    }
+
+    var fills = [];
+    deals.forEach(function (d) {
+      var row = document.createElement("div");
+      row.className = "ops-deal";
+      row.style.setProperty("--ac", RAI.color(d.hue));
+      row.style.setProperty("--ac2", RAI.color(d.hue, 75));
+      row.innerHTML =
+        '<div class="ops-deal-addr"><div class="h-3">' + d.addr + '</div><span class="small faint">' + d.client + "</span></div>" +
+        '<span class="st ops-stage" style="border-color:' + RAI.color(d.hue, 62, 0.32) + ";background:" + RAI.color(d.hue, 62, 0.09) + '"><i></i>' + d.stage + "</span>" +
+        '<div class="prog"><div class="prog-fill"></div></div>' +
+        '<div class="ops-deal-meta mono"><span class="ops-deal-price">' + d.price + '</span><span class="small faint">' + d.days + "d to close</span></div>";
+      host.appendChild(row);
+      fills.push({ el: row.querySelector(".prog-fill"), pct: d.pct });
+    });
+
+    onRevealed(panel, function () {
+      fills.forEach(function (f, i) {
+        if (RM) { f.el.style.width = f.pct + "%"; return; }
+        setTimeout(function () { f.el.style.width = f.pct + "%"; }, i * 110);
+      });
+    });
+  })();
+
+  /* ---------- Bottom ticker ---------- */
+  (function () {
+    var track = document.getElementById("ops-ticker-track");
+    if (!track || !RAI.feed.length) return;
+    var html = RAI.feed.filter(function (_, i) { return i % 2 === 0; }).map(function (e) {
+      var a = RAI.getAgent(e.agentId);
+      return '<span class="ops-tk"><b style="color:' + (a ? RAI.color(a) : "var(--gold)") + '">' +
+             (a ? a.codename : "OPS") + "</b>" + e.text + "</span>";
+    }).join("");
+    track.innerHTML = RM ? html : html + html;
+  })();
+
+})();
+</script>
+</body>
+</html>

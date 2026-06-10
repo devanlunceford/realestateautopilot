@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Signal lost — Real Estate Autopilot</title>
+<meta name="description" content="Nothing listed at this address. Head back to Mission Control or pull up the roster.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23e3b54e'/%3E%3Ctext x='32' y='39' font-family='Arial' font-style='italic' font-weight='800' font-size='19' fill='%23070b14' text-anchor='middle'%3EREA%3C/text%3E%3C/svg%3E">
+<script>try{if(localStorage.getItem("rai-theme")==="light")document.documentElement.setAttribute("data-theme","light")}catch(e){}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400..800;1,400..800&family=Figtree:ital,wght@0,400..700;1,400..700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/core.css">
+<style>
+/* ===== 404.html — Signal Lost (page-scoped) ===== */
+
+.nf-hero {
+  display: grid;
+  min-height: calc(100svh - var(--nav-h));
+  align-content: center;
+}
+.nf-wrap { display: grid; justify-items: center; text-align: center; }
+
+.nf-code {
+  font-size: clamp(6.5rem, 20vw, 12rem);
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+}
+.nf-title { margin-top: clamp(6px, 1.5vw, 14px); }
+.nf-lede { margin-top: 14px; }
+
+/* Crew log panel — its .log terminal stays dark in both themes */
+.nf-panel {
+  margin-top: clamp(28px, 4vw, 40px);
+  width: min(480px, 100%);
+  padding: 14px 14px 12px;
+  text-align: left;
+}
+.nf-panel-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--t-low);
+  padding: 2px 4px 11px;
+}
+.nf-log .log-line + .log-line { margin-top: 2px; }
+.nf-log .codename { font-size: 10px; margin-right: 4px; }
+
+/* Actions */
+.nf-actions {
+  display: flex; flex-wrap: wrap; justify-content: center;
+  gap: 14px;
+  margin-top: clamp(30px, 4.5vw, 44px);
+}
+</style>
+</head>
+<body>
+
+<div class="bg" aria-hidden="true">
+  <div class="bg-grid"></div>
+  <div class="orb orb-a"></div>
+  <div class="orb orb-b"></div>
+  <div class="orb orb-c"></div>
+  <div class="bg-noise"></div>
+</div>
+
+<header class="nav">
+  <a class="nav-logo" href="index.html" aria-label="Real Estate Autopilot home">
+    <span class="logo-mark">REA</span>
+    <span class="logo-word">Real&nbsp;Estate&nbsp;<b>Autopilot</b></span>
+  </a>
+  <nav class="nav-links" aria-label="Primary">
+    <a href="index.html">Mission Control</a>
+    <a href="agents.html">Agents</a>
+    <a href="playbooks.html">Playbooks</a>
+    <a href="ops.html">Live Ops</a>
+  </nav>
+  <div class="nav-right">
+    <span class="status-chip"><i class="pulse-dot"></i>12 agents online</span>
+    <a class="btn btn-gold btn-sm" href="index.html#console">Deploy a task</a>
+  </div>
+</header>
+
+<main class="page">
+
+  <section class="section nf-hero">
+    <div class="wrap nf-wrap">
+      <p class="h-display nf-code reveal"><em>404</em></p>
+      <h1 class="h-1 nf-title reveal" style="--d:.08s">Signal lost.</h1>
+      <p class="lede nf-lede reveal" style="--d:.16s">No property at this address. The crew checked twice.</p>
+
+      <div class="glass nf-panel reveal" style="--d:.24s">
+        <div class="nf-panel-head mono"><span>Crew log</span><span>3 entries</span></div>
+        <div class="log nf-log" id="nfLog" role="log">
+          <div class="log-line" data-agent="chief-of-staff"><span class="ts">--:--:--</span><span class="tx"><span class="codename">TOWER</span> route not found · re-checking MLS…</span></div>
+          <div class="log-line" data-agent="market-analyst"><span class="ts">--:--:--</span><span class="tx"><span class="codename">COMPASS</span> no comps at this URL</span></div>
+          <div class="log-line ok" data-agent="chief-of-staff"><span class="ts">--:--:--</span><span class="tx"><span class="codename">TOWER</span> recommend: return to base</span></div>
+        </div>
+      </div>
+
+      <div class="nf-actions reveal" style="--d:.32s">
+        <a class="btn btn-gold" href="index.html">Back to Mission Control</a>
+        <a class="btn btn-ghost" href="agents.html">See the roster</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <a class="nav-logo" href="index.html"><span class="logo-mark">REA</span></a>
+      <p>The twelve-agent operations team behind Devan Lunceford Real Estate, Indianapolis. One command post. Zero dropped balls.</p>
+    </div>
+    <div>
+      <h5>Platform</h5>
+      <nav class="footer-links">
+        <a href="index.html">Mission Control</a>
+        <a href="agents.html">The Roster</a>
+        <a href="playbooks.html">Playbooks</a>
+        <a href="ops.html">Live Ops</a>
+      </nav>
+    </div>
+    <div>
+      <h5>Command</h5>
+      <nav class="footer-links">
+        <a href="index.html#console">Deploy a task</a>
+        <a href="agents.html">Open a dossier</a>
+        <a href="playbooks.html">Run a playbook</a>
+        <a href="ops.html#feed">Watch the feed</a>
+      </nav>
+    </div>
+    <div class="footer-meta">
+      <span class="sys"><i class="pulse-dot"></i>All systems nominal</span>
+      <span>Real Estate Autopilot · Indianapolis · <span id="ft-year"></span></span>
+    </div>
+  </div>
+</footer>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/shared.js"></script>
+<script>
+(function () {
+  "use strict";
+  if (!window.RAI || !window.RAIUI) return;
+
+  /* Stamp the crew log a few seconds apart — the check already ran. No timers. */
+  var AGO = [9, 5, 2]; // seconds before page load
+
+  function stamp(secAgo) {
+    var d = new Date(Date.now() - secAgo * 1000);
+    return [d.getHours(), d.getMinutes(), d.getSeconds()].map(function (n) {
+      return String(n).padStart(2, "0");
+    }).join(":");
+  }
+
+  document.querySelectorAll("#nfLog .log-line").forEach(function (line, i) {
+    var ts = line.querySelector(".ts");
+    if (ts) ts.textContent = stamp(AGO[i] != null ? AGO[i] : 0);
+    var agent = RAI.getAgent(line.dataset.agent || "");
+    if (agent) line.style.setProperty("--ac", RAI.color(agent));
+  });
+})();
+</script>
+</body>
+</html>

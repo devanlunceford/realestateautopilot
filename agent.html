@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agent Dossier — Real Estate Autopilot</title>
+<meta name="description" content="The dossier: what this agent runs, what it plugs into, and what it shipped in the last 24 hours. One of twelve on the Real Estate Autopilot crew.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23e3b54e'/%3E%3Ctext x='32' y='39' font-family='Arial' font-style='italic' font-weight='800' font-size='19' fill='%23070b14' text-anchor='middle'%3EREA%3C/text%3E%3C/svg%3E">
+<script>try{if(localStorage.getItem("rai-theme")==="light")document.documentElement.setAttribute("data-theme","light")}catch(e){}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400..800;1,400..800&family=Figtree:ital,wght@0,400..700;1,400..700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/core.css">
+<style>
+  /* ============ agent.html — dossier-only styles ============ */
+
+  /* ---- header ---- */
+  .dx-head { overflow: hidden; padding-bottom: clamp(36px, 5vw, 64px); }
+  .dx-watermark {
+    position: absolute; top: clamp(12px, 3vw, 40px); right: -0.06em;
+    font-family: var(--f-display); font-style: italic; font-weight: 600;
+    font-size: clamp(5rem, 14vw, 12rem); line-height: 0.82; letter-spacing: -0.04em;
+    white-space: nowrap;
+    color: color-mix(in srgb, var(--ac) 8%, transparent);
+    pointer-events: none; user-select: none; z-index: 0;
+  }
+  .dx-above { position: relative; z-index: 1; }
+  .dx-crumb {
+    display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px 18px;
+    letter-spacing: 0.16em; text-transform: uppercase; color: var(--t-mid);
+    margin-bottom: clamp(30px, 5vw, 52px);
+  }
+  .dx-crumb a { transition: color 0.2s; }
+  .dx-crumb a:hover { color: var(--gold-soft); }
+  .dx-head-grid {
+    display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 4fr);
+    gap: clamp(36px, 5vw, 72px); align-items: end;
+  }
+  .dx-id-row { display: flex; align-items: center; gap: clamp(16px, 2.5vw, 26px); flex-wrap: wrap; }
+  .dx-name { font-size: clamp(2.25rem, 4.8vw, 3.8rem); }
+  .dx-meta-row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin: 18px 0 24px; }
+  .dx-pulse { padding: 22px 26px; }
+  .dx-pulse-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 16px; }
+  .dx-pulse-label { letter-spacing: 0.18em; text-transform: uppercase; }
+  .dx-pulse-now { color: var(--ac); }
+  .dx-spark { height: 64px; }
+
+  /* ---- kpi row ---- */
+  .dx-kpi-sec { padding-top: 0; }
+  .dx-kpi-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+  .dx-kpi::after {
+    content: ""; position: absolute; top: 0; left: 22px; width: 44px; height: 2px;
+    border-radius: 2px; background: linear-gradient(90deg, var(--ac), transparent);
+  }
+
+  /* ---- two-column body ---- */
+  .dx-body { padding-top: clamp(40px, 6vw, 72px); }
+  .dx-cols {
+    display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    gap: clamp(44px, 6vw, 88px); align-items: start;
+  }
+  .dx-h { display: flex; align-items: center; gap: 18px; margin-bottom: 12px; }
+  .dx-h-line { flex: 1; height: 1px; min-width: 32px; background: linear-gradient(90deg, var(--line-strong), transparent); }
+  .dx-block + .dx-block { margin-top: clamp(40px, 5vw, 60px); }
+  .dx-skills { list-style: none; }
+  .dx-skill { padding: 17px 0 15px; border-bottom: 1px solid var(--line); }
+  .dx-skill:last-child { border-bottom: 0; }
+  .dx-skill-sub { color: var(--t-mid); font-size: 0.92rem; line-height: 1.55; margin: 6px 0 0 16px; max-width: 54ch; }
+  .dx-integrations { display: flex; flex-wrap: wrap; gap: 10px; padding-top: 8px; }
+
+  /* ---- timeline ---- */
+  .dx-tl { list-style: none; position: relative; padding-left: 26px; margin-top: 14px; }
+  .dx-tl::before {
+    content: ""; position: absolute; left: 3px; top: 8px; bottom: 14px; width: 1px;
+    background: linear-gradient(180deg, var(--ac), transparent); opacity: 0.3;
+  }
+  .dx-tl-item { position: relative; padding-bottom: 24px; }
+  .dx-tl-item:last-child { padding-bottom: 0; }
+  .dx-tl-item::before {
+    content: ""; position: absolute; left: -26px; top: 7px; width: 7px; height: 7px;
+    border-radius: 50%; background: var(--ac);
+    box-shadow: 0 0 10px color-mix(in srgb, var(--ac) 60%, transparent);
+  }
+  .dx-tl-time { letter-spacing: 0.1em; }
+  .dx-tl-text { color: var(--t-mid); font-size: 0.93rem; line-height: 1.55; margin-top: 3px; }
+  .dx-tl-more { display: inline-block; margin-top: 22px; color: var(--t-mid); transition: color 0.2s; }
+  .dx-tl-more:hover { color: var(--gold-soft); }
+  @media (min-width: 961px) {
+    .dx-col-side { position: sticky; top: calc(var(--nav-h) + 28px); }
+  }
+
+  /* ---- deploy cta ---- */
+  .dx-cta {
+    position: relative; overflow: hidden;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: clamp(24px, 4vw, 48px); flex-wrap: wrap;
+    padding: clamp(34px, 5vw, 56px) clamp(26px, 5vw, 56px);
+  }
+  .dx-cta::before {
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(480px 220px at 10% 0%, color-mix(in srgb, var(--ac) 10%, transparent), transparent 70%);
+  }
+  .dx-cta-copy { flex: 1 1 360px; min-width: 0; }
+  .dx-cta-line { color: var(--t-mid); margin-top: 10px; max-width: 48ch; }
+  .dx-cta-sample { margin-top: 20px; color: var(--t-mid); overflow-wrap: anywhere; }
+
+  /* ---- prev / next ---- */
+  .dx-pn-label { letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 16px; }
+  .dx-pn { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+  .dx-pn-card { display: flex; flex-direction: column; gap: 18px; }
+  .dx-pn-dir { letter-spacing: 0.18em; text-transform: uppercase; }
+  .dx-pn-id { display: flex; align-items: center; gap: 16px; min-width: 0; }
+  .dx-pn-meta { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+  .dx-pn-next { align-items: flex-end; text-align: right; }
+  .dx-pn-next .dx-pn-id { flex-direction: row-reverse; }
+  .dx-pn-next .dx-pn-meta { align-items: flex-end; }
+  .dx-top-r {
+    position: absolute; top: 0; right: 24px; left: 55%; height: 2px;
+    border-radius: 2px; background: linear-gradient(270deg, var(--ac), transparent);
+  }
+
+  /* ---- responsive ---- */
+  @media (max-width: 960px) {
+    .dx-head-grid { grid-template-columns: 1fr; align-items: start; }
+    .dx-pulse { max-width: 440px; }
+    .dx-cols { grid-template-columns: 1fr; }
+    .dx-kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  @media (max-width: 640px) {
+    .dx-pn { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 440px) {
+    .dx-kpi-grid { grid-template-columns: 1fr; }
+    .dx-cta .btn { width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<div class="bg" aria-hidden="true">
+  <div class="bg-grid"></div>
+  <div class="orb orb-a"></div>
+  <div class="orb orb-b"></div>
+  <div class="orb orb-c"></div>
+  <div class="bg-noise"></div>
+</div>
+
+<header class="nav">
+  <a class="nav-logo" href="index.html" aria-label="Real Estate Autopilot home">
+    <span class="logo-mark">REA</span>
+    <span class="logo-word">Real&nbsp;Estate&nbsp;<b>Autopilot</b></span>
+  </a>
+  <nav class="nav-links" aria-label="Primary">
+    <a href="index.html">Mission Control</a>
+    <a href="agents.html">Agents</a>
+    <a href="playbooks.html">Playbooks</a>
+    <a href="ops.html">Live Ops</a>
+  </nav>
+  <div class="nav-right">
+    <span class="status-chip"><i class="pulse-dot"></i>12 agents online</span>
+    <a class="btn btn-gold btn-sm" href="index.html#console">Deploy a task</a>
+  </div>
+</header>
+
+<main class="page">
+  <div id="dossier">
+
+    <!-- 1 · Dossier header -->
+    <section class="section dx-head">
+      <div class="dx-watermark" id="dx-watermark" aria-hidden="true"></div>
+      <div class="wrap dx-above">
+        <div class="dx-crumb mono small reveal">
+          <span><a href="agents.html">Roster</a> <span class="faint">/</span> <span id="dx-dept-crumb"></span></span>
+          <span class="faint" id="dx-file"></span>
+        </div>
+        <div class="dx-head-grid">
+          <div>
+            <div class="dx-id-row reveal" style="--d:.08s">
+              <div class="avatar avatar-lg" id="dx-avatar"></div>
+              <h1 class="h-display dx-name" id="dx-name"></h1>
+            </div>
+            <div class="dx-meta-row reveal" style="--d:.16s">
+              <span class="codename" id="dx-codename"></span>
+              <span class="tag tag-ac" id="dx-dept"></span>
+              <span class="status-chip"><i class="pulse-dot"></i>online</span>
+            </div>
+            <p class="lede reveal" id="dx-bio" style="--d:.24s"></p>
+          </div>
+          <aside class="glass dx-pulse reveal" style="--d:.3s">
+            <div class="dx-pulse-head">
+              <span class="mono small faint dx-pulse-label">Deploys — 14 days</span>
+              <span class="mono small dx-pulse-now" id="dx-pulse-now"></span>
+            </div>
+            <div class="dx-spark" id="dx-spark"></div>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2 · KPI row -->
+    <section class="section-tight dx-kpi-sec">
+      <div class="wrap">
+        <div class="dx-kpi-grid" id="dx-kpis"></div>
+      </div>
+    </section>
+
+    <!-- 3 · What it runs / Last 24 hours -->
+    <section class="section dx-body">
+      <div class="wrap">
+        <div class="dx-cols">
+          <div>
+            <div class="dx-block reveal">
+              <div class="dx-h"><h2 class="h-2">What it runs</h2><span class="dx-h-line"></span></div>
+              <ul class="dx-skills" id="dx-skills"></ul>
+            </div>
+            <div class="dx-block reveal" style="--d:.1s">
+              <div class="dx-h"><h2 class="h-2">Plugged into</h2><span class="dx-h-line"></span></div>
+              <div class="dx-integrations" id="dx-integrations"></div>
+            </div>
+          </div>
+          <aside class="dx-col-side reveal" style="--d:.15s">
+            <div class="dx-h"><h2 class="h-2">Last 24 hours</h2><span class="dx-h-line"></span></div>
+            <ol class="dx-tl" id="dx-timeline"></ol>
+            <a class="dx-tl-more mono small" href="ops.html#feed">Watch the live feed →</a>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4 · Deploy CTA -->
+    <section class="section-tight">
+      <div class="wrap">
+        <div class="glass glass-notch dx-cta reveal">
+          <div class="dx-cta-copy">
+            <h2 class="h-2" id="dx-cta-title"></h2>
+            <p class="dx-cta-line">Brief it in one line. It picks the work up in seconds and reports back when it's done.</p>
+            <p class="dx-cta-sample mono small"><span class="faint">&gt;</span> <span id="dx-cta-sample"></span> <span class="caret"></span></p>
+          </div>
+          <a class="btn btn-gold" id="dx-deploy" href="index.html#console">Deploy</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5 · Prev / next -->
+    <section class="section-tight">
+      <div class="wrap">
+        <div class="dx-pn-label mono small faint reveal">More of the roster</div>
+        <div class="dx-pn reveal" style="--d:.08s">
+          <a class="card dx-pn-card" id="dx-prev" href="agents.html"></a>
+          <a class="card dx-pn-card dx-pn-next" id="dx-next" href="agents.html"></a>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <a class="nav-logo" href="index.html"><span class="logo-mark">REA</span></a>
+      <p>The twelve-agent operations team behind Devan Lunceford Real Estate, Indianapolis. One command post. Zero dropped balls.</p>
+    </div>
+    <div>
+      <h5>Platform</h5>
+      <nav class="footer-links">
+        <a href="index.html">Mission Control</a>
+        <a href="agents.html">The Roster</a>
+        <a href="playbooks.html">Playbooks</a>
+        <a href="ops.html">Live Ops</a>
+      </nav>
+    </div>
+    <div>
+      <h5>Command</h5>
+      <nav class="footer-links">
+        <a href="index.html#console">Deploy a task</a>
+        <a href="agents.html">Open a dossier</a>
+        <a href="playbooks.html">Run a playbook</a>
+        <a href="ops.html#feed">Watch the feed</a>
+      </nav>
+    </div>
+    <div class="footer-meta">
+      <span class="sys"><i class="pulse-dot"></i>All systems nominal</span>
+      <span>Real Estate Autopilot · Indianapolis · <span id="ft-year"></span></span>
+    </div>
+  </div>
+</footer>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/shared.js"></script>
+<script>
+(function () {
+  "use strict";
+  if (!window.RAI || !window.RAIUI || !RAI.agents || !RAI.agents.length) return;
+
+  // ---- one natural-language sample task per agent (powers the Deploy CTA) ----
+  var SAMPLE_TASKS = {
+    "chief-of-staff":          "Plan my week — what needs me first?",
+    "lead-concierge":          "New Zillow lead just hit — handle it",
+    "luxury-prospector":       "Pull this week's expireds over $750K and prep outreach",
+    "funnel-manager":          "Run a funnel pass — signups, upsells, refunds",
+    "listing-marketer":        "Launch the new listing at 4521 Maple Ave",
+    "client-experience":       "Ask the Hendersons for a Google review",
+    "referral-partner":        "Who on the partner roster has gone quiet?",
+    "transaction-coordinator": "We're under contract on Fletcher Place — run the close",
+    "bookkeeper":              "Month-end: where's my money?",
+    "market-analyst":          "Price 4521 Maple Ave before Friday's listing appointment",
+    "pipeline-analyst":        "Give me the pipeline numbers — what's stalled?",
+    "investor-matcher":        "Score last night's MIBOR adds against the investor list"
+  };
+
+  // ---- sub-lines for "What it runs" (index-aligned with each agent's skills[]) ----
+  var SKILL_NOTES = {
+    "chief-of-staff": [
+      "Reads the ask, picks the crew, sets the order.",
+      "Morning and evening: what moved, what's stuck, what needs you.",
+      "Anything stalled past two hours gets pushed up the chain.",
+      "Keeps eleven specialists working off the same facts.",
+      "Friday wrap: wins, misses, and next week's calls."
+    ],
+    "lead-concierge": [
+      "First text out before the lead opens another tab.",
+      "The right cadence for each stage — never spam.",
+      "A 90-day cycle that wakes up quiet contacts.",
+      "Moves contacts forward in Follow Up Boss as they warm.",
+      "Nobody sits untouched for two days. Ever."
+    ],
+    "luxury-prospector": [
+      "Finds the $750K+ listings nobody re-listed.",
+      "Personal letters to owners doing it alone.",
+      "Carmel and Zionsville corridors, worked on schedule.",
+      "The dinner-party network, fed and tracked.",
+      "Researched, specific, and signed off by Devan before send."
+    ],
+    "funnel-manager": [
+      "Signups get the sequence; buyers get the next step.",
+      "$47 buyers hear about the $97 analyzer at the right moment.",
+      "A save attempt before the money walks.",
+      "Every dollar traced back to its source.",
+      "New product? The list hears about it in the right order."
+    ],
+    "listing-marketer": [
+      "Two variants per listing, zero clichés.",
+      "Print and story sizes, on brand, same day.",
+      "The neighborhood hears before the portals do.",
+      "Thursday push, weekend traffic.",
+      "Walkthrough scripts in the listing's own voice."
+    ],
+    "client-experience": [
+      "Clients hear from you before they start wondering.",
+      "Timed four days post-close, when the glow is real.",
+      "Every closing date remembered, every year.",
+      "Listens for the neighbor who's thinking of selling.",
+      "Past clients stay warm without you lifting a finger."
+    ],
+    "referral-partner": [
+      "Every lender, title rep, and attorney on one list.",
+      "Something useful in their inbox four times a year.",
+      "Flags the partners who've gone silent.",
+      "Who sent what, logged the day it lands.",
+      "Warm intros written and ready for your sign-off."
+    ],
+    "transaction-coordinator": [
+      "27 steps from signature to keys, dated on day one.",
+      "Chases every party days before a date slips.",
+      "Every signature accounted for, nothing lost in email.",
+      "Lender, title, inspector, co-op agent — same page.",
+      "Every milestone on your calendar before you ask."
+    ],
+    "bookkeeper": [
+      "Every closing check matched to the bank deposit.",
+      "Transactions tagged as they land from QuickBooks.",
+      "S-Corp estimates set aside before they sting.",
+      "'Where's my money' answered in one screen.",
+      "Keeps the salary line where the CPA wants it."
+    ],
+    "market-analyst": [
+      "Comp selection with every adjustment documented.",
+      "A band you can defend at the kitchen table.",
+      "Micro-area math, not metro averages.",
+      "Months of inventory by neighborhood, updated weekly.",
+      "ARV, rent comps, and returns with sources cited."
+    ],
+    "pipeline-analyst": [
+      "Speed-to-lead, conversion, GCI — live, not monthly.",
+      "Where leads stall, by stage and by source.",
+      "Quarter forecast, risk-weighted, no wishful math.",
+      "Dollars at risk flagged before they evaporate.",
+      "The numbers in your inbox every Friday."
+    ],
+    "investor-matcher": [
+      "Every new listing scored against every buyer's box.",
+      "Strategy-specific math, not one-size scoring.",
+      "The numbers investors check, already pulled.",
+      "Buy-boxes kept current as appetites change.",
+      "47 overnight listings scored before breakfast."
+    ]
+  };
+
+  var TL_TIMES = ["34m ago", "1h ago", "3h ago", "6h ago", "11h ago", "18h ago"];
+
+  // ---- resolve the agent (fallback: lead-concierge) ----
+  var agent = RAI.getAgent(RAIUI.qsParam("id")) || RAI.getAgent("lead-concierge");
+  if (!agent) return;
+  var idx = RAI.agents.indexOf(agent);
+  var total = RAI.agents.length;
+
+  document.title = agent.codename + " — " + agent.name + " — Real Estate Autopilot";
+
+  var root = document.getElementById("dossier");
+  if (!root) return;
+  root.style.setProperty("--ac", RAI.color(agent));
+  root.style.setProperty("--ac2", RAI.color(agent, 75));
+
+  // ---- helpers ----
+  function $(id) { return document.getElementById(id); }
+  function setText(id, text) { var n = $(id); if (n) n.textContent = text; }
+  function esc(s) {
+    return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+  function avatarSvg(a) { return '<svg viewBox="0 0 24 24" aria-hidden="true">' + a.icon + "</svg>"; }
+
+  // ---- 1 · header ----
+  setText("dx-dept-crumb", agent.dept);
+  setText("dx-file", "File " + String(idx + 1).padStart(2, "0") + " / " + total);
+  var wm = $("dx-watermark"); if (wm) wm.textContent = agent.codename;
+  var av = $("dx-avatar"); if (av) av.innerHTML = avatarSvg(agent);
+  setText("dx-name", agent.name);
+  setText("dx-codename", agent.codename);
+  setText("dx-dept", agent.dept);
+  setText("dx-bio", agent.bio);
+  setText("dx-pulse-now", agent.stats.deploys + " this wk");
+  var sparkEl = $("dx-spark");
+  if (sparkEl) RAIUI.spark(sparkEl, agent.stats.spark, { color: RAI.color(agent), w: 260, h: 64 });
+
+  // ---- 2 · KPI row ----
+  var kpiGrid = $("dx-kpis");
+  if (kpiGrid) {
+    var tiles = [
+      { label: "Deploys / wk",     count: agent.stats.deploys,      dec: 0 },
+      { label: "Success rate",     count: agent.stats.success,      dec: 1, suffix: "%" },
+      { label: "Avg mission time", count: agent.stats.avgMin,       dec: 1, unit: "min" },
+      { label: "Integrations",     count: agent.integrations.length, dec: 0 }
+    ];
+    kpiGrid.innerHTML = tiles.map(function (t, i) {
+      return '<div class="kpi dx-kpi reveal" style="--d:' + (i * 0.07).toFixed(2) + 's">' +
+        '<div class="kpi-label">' + t.label + "</div>" +
+        '<div class="kpi-value"><span data-count="' + t.count + '" data-decimals="' + t.dec + '"' +
+        (t.suffix ? ' data-suffix="' + t.suffix + '"' : "") + ">0</span>" +
+        (t.unit ? '<span class="unit">' + t.unit + "</span>" : "") +
+        "</div></div>";
+    }).join("");
+  }
+
+  // ---- 3a · skills + integrations ----
+  var skillsEl = $("dx-skills");
+  if (skillsEl) {
+    var notes = SKILL_NOTES[agent.id] || [];
+    skillsEl.innerHTML = agent.skills.map(function (s, i) {
+      return '<li class="dx-skill reveal" style="--d:' + (i * 0.06).toFixed(2) + 's">' +
+        '<h3 class="h-3 tick">' + esc(s) + "</h3>" +
+        '<p class="dx-skill-sub">' + esc(notes[i] || "Runs on schedule, reports to the Tower.") + "</p></li>";
+    }).join("");
+  }
+  var intEl = $("dx-integrations");
+  if (intEl) {
+    intEl.innerHTML = agent.integrations.map(function (t) {
+      return '<span class="tag">' + esc(t) + "</span>";
+    }).join("");
+  }
+
+  // ---- 3b · last-24-hours timeline ----
+  var tlEl = $("dx-timeline");
+  if (tlEl) {
+    var entries = RAI.feed.filter(function (f) { return f.agentId === agent.id; })
+                          .map(function (f) { return f.text; });
+    for (var i = 0; entries.length < 6 && i < agent.skills.length; i++) {
+      entries.push("Ran: " + agent.skills[i]);
+    }
+    tlEl.innerHTML = entries.slice(0, 6).map(function (t, i) {
+      return '<li class="dx-tl-item reveal" style="--d:' + (i * 0.07).toFixed(2) + 's">' +
+        '<span class="dx-tl-time mono small faint">' + TL_TIMES[i] + "</span>" +
+        '<p class="dx-tl-text">' + esc(t) + "</p></li>";
+    }).join("");
+  }
+
+  // ---- 4 · deploy CTA ----
+  var sample = SAMPLE_TASKS[agent.id] || ("Put " + agent.name + " to work");
+  var ctaTitle = $("dx-cta-title");
+  if (ctaTitle) ctaTitle.innerHTML = "Put <em>" + esc(agent.codename) + "</em> on it.";
+  setText("dx-cta-sample", sample);
+  var deploy = $("dx-deploy");
+  if (deploy) {
+    deploy.href = "index.html?task=" + encodeURIComponent(sample) + "#console";
+    deploy.textContent = "Deploy " + agent.name;
+  }
+
+  // ---- 5 · prev / next (wraps around the roster) ----
+  function pnCard(el, a, dir) {
+    if (!el || !a) return;
+    el.href = "agent.html?id=" + encodeURIComponent(a.id);
+    el.style.setProperty("--ac", RAI.color(a));
+    el.style.setProperty("--ac2", RAI.color(a, 75));
+    el.setAttribute("aria-label", (dir === "prev" ? "Previous agent: " : "Next agent: ") + a.name);
+    el.innerHTML =
+      '<div class="' + (dir === "prev" ? "card-top" : "dx-top-r") + '"></div>' +
+      '<span class="dx-pn-dir mono small faint">' + (dir === "prev" ? "← Previous" : "Next →") + "</span>" +
+      '<span class="dx-pn-id">' +
+        '<span class="avatar">' + avatarSvg(a) + "</span>" +
+        '<span class="dx-pn-meta"><span class="h-3">' + esc(a.name) + '</span><span class="codename">' + esc(a.codename) + "</span></span>" +
+      "</span>";
+  }
+  pnCard($("dx-prev"), RAI.agents[(idx - 1 + total) % total], "prev");
+  pnCard($("dx-next"), RAI.agents[(idx + 1) % total], "next");
+})();
+</script>
+</body>
+</html>

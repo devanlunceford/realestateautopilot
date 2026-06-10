@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Roster — Real Estate Autopilot</title>
+<meta name="description" content="All twelve agents behind Devan Lunceford Real Estate, Indianapolis — what each one runs, what it plugs into, and what it shipped this week.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23e3b54e'/%3E%3Ctext x='32' y='39' font-family='Arial' font-style='italic' font-weight='800' font-size='19' fill='%23070b14' text-anchor='middle'%3EREA%3C/text%3E%3C/svg%3E">
+<script>try{if(localStorage.getItem("rai-theme")==="light")document.documentElement.setAttribute("data-theme","light")}catch(e){}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400..800;1,400..800&family=Figtree:ital,wght@0,400..700;1,400..700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/core.css">
+<style>
+/* ===== agents.html — The Roster (page-scoped) ===== */
+
+/* Hero */
+.roster-hero { padding-bottom: clamp(24px, 4vw, 48px); }
+.roster-hero-grid { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: clamp(32px, 6vw, 88px); align-items: end; }
+.roster-title { font-size: clamp(2.5rem, 5.4vw, 4.3rem); }
+.roster-hero .lede { margin-top: 24px; }
+
+.roster-stats { min-width: 196px; }
+.rh-stat { padding: 16px 0; border-top: 1px solid var(--line); text-align: right; display: grid; gap: 3px; }
+.rh-stat:first-child { border-top: 0; padding-top: 0; }
+.rh-stat:last-child { padding-bottom: 0; }
+.rh-num { font-family: var(--f-display); font-weight: 600; font-size: clamp(1.7rem, 2.4vw, 2.2rem); line-height: 1.05; color: var(--t-hi); }
+.rh-label { font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--t-low); }
+
+/* Filter bar */
+.roster-main { padding-top: 0; }
+.roster-bar { display: flex; align-items: center; justify-content: space-between; gap: 18px 28px; flex-wrap: wrap; margin-bottom: 36px; }
+.roster-filters { display: flex; flex-wrap: wrap; gap: 10px; }
+.roster-filter { padding: 8px 15px; transition: color 0.2s, border-color 0.2s, background-color 0.2s, transform 0.2s; }
+.roster-filter:hover { color: var(--t-hi); border-color: var(--line-strong); transform: translateY(-1px); }
+.roster-filter b { font-weight: 500; font-size: 9.5px; color: var(--t-low); }
+.roster-filter.tag-ac b { color: inherit; opacity: 0.6; }
+.roster-count { letter-spacing: 0.12em; text-transform: uppercase; }
+
+/* Grid */
+.roster-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px; }
+
+/* Card */
+.roster-card { display: flex; flex-direction: column; }
+.roster-card[hidden] { display: none; }
+.roster-card.is-set { transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease, opacity 0.25s ease; transition-delay: 0s; }
+.roster-card.is-out { opacity: 0; transform: translateY(12px) scale(0.985); pointer-events: none; }
+
+.roster-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
+.roster-ava { position: relative; }
+.roster-dot { position: absolute; top: -3px; right: -3px; width: 10px; height: 10px; border: 2px solid var(--ink-1); }
+.roster-dept { flex: none; }
+.roster-name { margin-bottom: 5px; }
+.roster-role {
+  color: var(--t-mid); font-size: 0.92rem; line-height: 1.55;
+  margin: 13px 0 16px; min-height: calc(0.92rem * 1.55 * 2);
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.roster-skills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+.roster-div { margin: auto 0 14px; }
+
+.roster-foot { display: flex; align-items: flex-end; justify-content: space-between; gap: 14px; }
+.roster-metric { display: grid; gap: 7px; }
+.roster-spark { width: 110px; height: 30px; }
+.roster-open {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: 0.84rem; font-weight: 600; letter-spacing: 0.02em;
+  color: var(--t-mid); white-space: nowrap;
+  transition: color 0.25s ease;
+}
+.roster-open svg { width: 15px; height: 15px; transition: transform 0.25s ease; }
+.roster-card:hover .roster-open { color: var(--ac); }
+.roster-card:hover .roster-open svg { transform: translateX(4px); }
+
+/* CTA band */
+.roster-cta {
+  position: relative; overflow: hidden;
+  padding: clamp(34px, 5vw, 56px) clamp(28px, 5vw, 64px);
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 28px 40px; flex-wrap: wrap;
+}
+.roster-cta::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(560px 240px at 8% 0%, color-mix(in srgb, var(--gold) 8%, transparent), transparent 70%);
+}
+.roster-cta-copy { position: relative; max-width: 56ch; }
+.roster-cta-copy p { color: var(--t-mid); margin-top: 10px; }
+.roster-cta-codes { margin-top: 20px; font-size: 9.5px; letter-spacing: 0.24em; text-transform: uppercase; color: var(--t-low); line-height: 2; }
+.roster-cta .btn { position: relative; flex: none; }
+
+/* Live network */
+.net-sec { padding: 0 0 clamp(36px, 5vw, 56px); }
+.net-panel { padding: clamp(18px, 3vw, 26px) clamp(20px, 3.5vw, 34px) clamp(6px, 1.5vw, 14px); }
+.net-head { display: flex; align-items: center; justify-content: space-between; gap: 10px 28px; flex-wrap: wrap; }
+.net-head .eyebrow { margin-bottom: 0; }
+.net-caption { min-width: 0; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: 0.04em; transition: opacity 0.24s ease; }
+.net-caption.is-fading { opacity: 0; }
+.net-svg { width: 100%; height: auto; display: block; margin-top: 2px; }
+.net-line { fill: none; stroke: var(--line); stroke-width: 1; }
+.net-beam {
+  fill: none; stroke-width: 1.8; stroke-linecap: round;
+  opacity: 0; transition: opacity 0.25s ease;
+  filter: drop-shadow(0 0 5px currentColor);
+  pointer-events: none;
+}
+.net-lbl { font-family: var(--f-label); font-size: 10px; font-weight: 600; letter-spacing: 0.11em; }
+.net-node { cursor: pointer; }
+.net-node .net-lbl { fill-opacity: 0.85; transition: fill-opacity 0.2s; }
+.net-node:hover .net-lbl, .net-node:focus-visible .net-lbl { fill-opacity: 1; }
+.net-ring, .net-tring { transform-box: fill-box; transform-origin: center; }
+.net-node .net-ring { transition: stroke-opacity 0.2s; }
+.net-node:hover .net-ring, .net-node:focus-visible .net-ring { stroke-opacity: 0.95; }
+.net-flash .net-ring, .net-flash .net-tring { animation: netFlash 0.95s cubic-bezier(0.3, 0, 0.4, 1); }
+@keyframes netFlash {
+  0%   { stroke-opacity: 0.5; transform: scale(1); }
+  35%  { stroke-opacity: 1;   transform: scale(1.4); }
+  100% { stroke-opacity: 0.5; transform: scale(1); }
+}
+.net-tower-pulse {
+  transform-box: fill-box; transform-origin: center;
+  animation: netTowerPulse 3.6s cubic-bezier(0.3, 0, 0.5, 1) infinite;
+}
+@keyframes netTowerPulse {
+  0%   { transform: scale(0.78); opacity: 0.5; }
+  75%  { transform: scale(1.45); opacity: 0; }
+  100% { transform: scale(1.45); opacity: 0; }
+}
+@media (max-width: 560px) {
+  .net-lbl-alt { display: none; }
+  .net-svg .net-lbl { font-size: 32px; letter-spacing: 0.06em; }
+}
+
+/* Responsive */
+@media (max-width: 1020px) {
+  .roster-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 960px) {
+  .roster-hero-grid { grid-template-columns: 1fr; align-items: start; }
+  .roster-stats { display: flex; gap: 20px; min-width: 0; }
+  .rh-stat { border-top: 0; border-left: 1px solid var(--line); padding: 0 0 0 20px; text-align: left; }
+  .rh-stat:first-child { border-left: 0; padding-left: 0; }
+}
+@media (max-width: 640px) {
+  .roster-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="bg" aria-hidden="true">
+  <div class="bg-grid"></div>
+  <div class="orb orb-a"></div>
+  <div class="orb orb-b"></div>
+  <div class="orb orb-c"></div>
+  <div class="bg-noise"></div>
+</div>
+
+<header class="nav">
+  <a class="nav-logo" href="index.html" aria-label="Real Estate Autopilot home">
+    <span class="logo-mark">REA</span>
+    <span class="logo-word">Real&nbsp;Estate&nbsp;<b>Autopilot</b></span>
+  </a>
+  <nav class="nav-links" aria-label="Primary">
+    <a href="index.html">Mission Control</a>
+    <a href="agents.html">Agents</a>
+    <a href="playbooks.html">Playbooks</a>
+    <a href="ops.html">Live Ops</a>
+  </nav>
+  <div class="nav-right">
+    <span class="status-chip"><i class="pulse-dot"></i>12 agents online</span>
+    <a class="btn btn-gold btn-sm" href="index.html#console">Deploy a task</a>
+  </div>
+</header>
+
+<main class="page">
+
+  <!-- Header -->
+  <section class="section roster-hero">
+    <div class="wrap">
+      <div class="roster-hero-grid">
+        <div>
+          <p class="eyebrow reveal">The Roster</p>
+          <h1 class="h-display roster-title reveal" style="--d:.08s">Twelve agents.<br><em>Zero sick days.</em></h1>
+          <p class="lede reveal" style="--d:.16s">Every one of them works a specific job in Devan's business. Click a card to read the dossier — what it does, what it plugs into, and what it shipped this week.</p>
+        </div>
+        <div class="roster-stats reveal" id="rosterStats" style="--d:.24s"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Live network -->
+  <section class="section-tight net-sec" aria-label="Live network">
+    <div class="wrap">
+      <div class="glass glass-notch net-panel reveal" style="--d:.1s">
+        <div class="net-head">
+          <p class="eyebrow">Live network</p>
+          <p class="mono small faint net-caption" id="netCaption"></p>
+        </div>
+        <div class="net-stage" id="netStage"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Filter bar + grid -->
+  <section class="section-tight roster-main">
+    <div class="wrap">
+      <div class="roster-bar reveal">
+        <div class="roster-filters" id="rosterFilters" role="group" aria-label="Filter agents by department"></div>
+        <span class="mono small faint roster-count" id="rosterCount" aria-live="polite">12 / 12 shown</span>
+      </div>
+      <div class="roster-grid" id="rosterGrid"></div>
+      <noscript><p class="mono small faint">Turn JavaScript on to load the roster.</p></noscript>
+    </div>
+  </section>
+
+  <!-- CTA band -->
+  <section class="section-tight">
+    <div class="wrap">
+      <div class="glass glass-notch roster-cta reveal">
+        <div class="roster-cta-copy">
+          <h2 class="h-2">Put them to work.</h2>
+          <p>One sentence in the console. The Tower picks the crew, sets the clock, and reports back with the finished work.</p>
+          <p class="mono roster-cta-codes" id="rosterCodes" aria-hidden="true"></p>
+        </div>
+        <a class="btn btn-gold" href="index.html#console">Deploy a task</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <a class="nav-logo" href="index.html"><span class="logo-mark">REA</span></a>
+      <p>The twelve-agent operations team behind Devan Lunceford Real Estate, Indianapolis. One command post. Zero dropped balls.</p>
+    </div>
+    <div>
+      <h5>Platform</h5>
+      <nav class="footer-links">
+        <a href="index.html">Mission Control</a>
+        <a href="agents.html">The Roster</a>
+        <a href="playbooks.html">Playbooks</a>
+        <a href="ops.html">Live Ops</a>
+      </nav>
+    </div>
+    <div>
+      <h5>Command</h5>
+      <nav class="footer-links">
+        <a href="index.html#console">Deploy a task</a>
+        <a href="agents.html">Open a dossier</a>
+        <a href="playbooks.html">Run a playbook</a>
+        <a href="ops.html#feed">Watch the feed</a>
+      </nav>
+    </div>
+    <div class="footer-meta">
+      <span class="sys"><i class="pulse-dot"></i>All systems nominal</span>
+      <span>Real Estate Autopilot · Indianapolis · <span id="ft-year"></span></span>
+    </div>
+  </div>
+</footer>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/shared.js"></script>
+<script>
+(function () {
+  "use strict";
+  if (!window.RAI || !window.RAIUI) return;
+
+  var agents = RAI.agents || [];
+  var grid = document.getElementById("rosterGrid");
+  var filters = document.getElementById("rosterFilters");
+  var countEl = document.getElementById("rosterCount");
+  var statsEl = document.getElementById("rosterStats");
+  var codesEl = document.getElementById("rosterCodes");
+  if (!grid || !agents.length) return;
+
+  var DEPTS = ["All", "Command", "Growth", "Marketing & Clients", "Operations", "Intelligence"];
+
+  function esc(s) {
+    return String(s).replace(/[&<>"]/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
+    });
+  }
+
+  /* ---- Hero stats (computed from the roster) ---- */
+  if (statsEl) {
+    var deploys = 0, success = 0;
+    agents.forEach(function (a) { deploys += a.stats.deploys; success += a.stats.success; });
+    var avg = (success / agents.length).toFixed(1);
+    statsEl.innerHTML =
+      '<div class="rh-stat"><span class="rh-num" data-count="' + agents.length + '">0</span><span class="rh-label mono">agents on call</span></div>' +
+      '<div class="rh-stat"><span class="rh-num" data-count="' + deploys + '">0</span><span class="rh-label mono">deploys last week</span></div>' +
+      '<div class="rh-stat"><span class="rh-num" data-count="' + avg + '" data-suffix="%" data-decimals="1">0</span><span class="rh-label mono">avg mission success</span></div>';
+  }
+
+  /* ---- Cards ---- */
+  var ARROW = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
+
+  grid.innerHTML = agents.map(function (a, i) {
+    var skills = a.skills.slice(0, 3).map(function (s) {
+      return '<span class="tag">' + esc(s) + "</span>";
+    }).join("");
+    return '<a class="card roster-card reveal" href="agent.html?id=' + encodeURIComponent(a.id) + '"' +
+      ' style="--ac:' + RAI.color(a) + ";--ac2:" + RAI.color(a, 75) + ";--d:" + (i * 0.055).toFixed(3) + 's"' +
+      ' data-dept="' + esc(a.dept) + '" aria-label="' + esc(a.name + " — open dossier") + '">' +
+        '<span class="card-top" aria-hidden="true"></span>' +
+        '<div class="roster-head">' +
+          '<div class="roster-ava">' +
+            '<div class="avatar"><svg viewBox="0 0 24 24" aria-hidden="true">' + a.icon + "</svg></div>" +
+            '<i class="pulse-dot roster-dot" aria-hidden="true"></i>' +
+          "</div>" +
+          '<span class="tag roster-dept">' + esc(a.dept) + "</span>" +
+        "</div>" +
+        '<h3 class="h-3 roster-name">' + esc(a.name) + "</h3>" +
+        '<span class="codename">' + esc(a.codename) + "</span>" +
+        '<p class="roster-role">' + esc(a.role) + "</p>" +
+        '<div class="roster-skills">' + skills + "</div>" +
+        '<hr class="hr-fade roster-div">' +
+        '<div class="roster-foot">' +
+          '<div class="roster-metric">' +
+            '<div class="roster-spark" aria-hidden="true"></div>' +
+            '<span class="mono small faint">' + a.stats.deploys + " deploys / wk</span>" +
+          "</div>" +
+          '<span class="roster-open">Open dossier ' + ARROW + "</span>" +
+        "</div>" +
+      "</a>";
+  }).join("");
+
+  var cards = Array.prototype.slice.call(grid.querySelectorAll(".roster-card"));
+
+  /* Sparklines + settle each card out of its reveal transition so
+     hover and filter fades stay snappy afterwards. */
+  function settle(card) { card.classList.add("is-set"); }
+
+  cards.forEach(function (card, i) {
+    var sp = card.querySelector(".roster-spark");
+    if (sp) RAIUI.spark(sp, agents[i].stats.spark, { color: RAI.color(agents[i]), w: 110, h: 30 });
+
+    if (RAIUI.reduceMotion) { settle(card); return; }
+    card.addEventListener("transitionend", function onEnd(e) {
+      if (e.target !== card || e.propertyName !== "opacity") return;
+      settle(card);
+      card.removeEventListener("transitionend", onEnd);
+    });
+    card.addEventListener("pointerenter", function () { settle(card); }, { once: true });
+  });
+
+  /* ---- Filters ---- */
+  var gen = 0;
+
+  function applyFilter(dept) {
+    gen++;
+    var g = gen;
+    var rm = RAIUI.reduceMotion;
+    var shown = 0;
+
+    cards.forEach(function (card) {
+      var match = dept === "All" || card.dataset.dept === dept;
+      if (match) {
+        var idx = shown++;
+        if (rm) { card.hidden = false; card.classList.remove("is-out"); return; }
+        if (card.hidden) {
+          card.hidden = false;
+          card.classList.add("is-out");
+        }
+        void card.offsetWidth;
+        card.style.transitionDelay = (idx * 0.03).toFixed(2) + "s";
+        card.classList.remove("is-out");
+        setTimeout(function () {
+          if (g === gen) card.style.transitionDelay = "";
+        }, 420 + idx * 30);
+      } else {
+        if (rm) { card.classList.add("is-out"); card.hidden = true; return; }
+        card.style.transitionDelay = "0s";
+        card.classList.add("is-out");
+        setTimeout(function () {
+          if (g === gen && card.classList.contains("is-out")) {
+            card.hidden = true;
+            card.style.transitionDelay = "";
+          }
+        }, 280);
+      }
+    });
+
+    if (countEl) countEl.textContent = shown + " / " + cards.length + " shown";
+  }
+
+  if (filters) {
+    var counts = {};
+    agents.forEach(function (a) { counts[a.dept] = (counts[a.dept] || 0) + 1; });
+
+    filters.innerHTML = DEPTS.map(function (d) {
+      var n = d === "All" ? agents.length : (counts[d] || 0);
+      var on = d === "All";
+      return '<button type="button" class="tag roster-filter' + (on ? " tag-ac" : "") + '"' +
+        ' data-dept="' + esc(d) + '" aria-pressed="' + on + '">' + esc(d) + " <b>" + n + "</b></button>";
+    }).join("");
+
+    filters.addEventListener("click", function (e) {
+      var btn = e.target.closest(".roster-filter");
+      if (!btn || btn.classList.contains("tag-ac")) return;
+      filters.querySelectorAll(".roster-filter").forEach(function (b) {
+        var active = b === btn;
+        b.classList.toggle("tag-ac", active);
+        b.setAttribute("aria-pressed", String(active));
+      });
+      cards.forEach(settle);
+      applyFilter(btn.dataset.dept);
+    });
+  }
+
+  if (countEl) countEl.textContent = cards.length + " / " + cards.length + " shown";
+
+  /* ---- CTA codename strip ---- */
+  if (codesEl) {
+    codesEl.textContent = agents.map(function (a) { return a.codename; }).join(" · ");
+  }
+
+  /* ---- Live network (spec §6f): TOWER + 11 specialists, positions computed ---- */
+  (function () {
+    var stage = document.getElementById("netStage");
+    var cap = document.getElementById("netCaption");
+    var tower = agents.find(function (a) { return a.orchestrator; });
+    var crew = agents.filter(function (a) { return !a.orchestrator; });
+    if (!stage || !cap || !tower || !crew.length) return;
+
+    var TX = 550, TY = 212;
+
+    var feedBy = {};
+    (RAI.feed || []).forEach(function (f) {
+      (feedBy[f.agentId] = feedBy[f.agentId] || []).push(f.text);
+    });
+
+    function pos(i) {
+      var deg = 170 - i * (160 / Math.max(crew.length - 1, 1));
+      var rad = deg * Math.PI / 180;
+      return {
+        x: +(TX + 478 * Math.cos(rad)).toFixed(1),
+        y: +(TY - 152 * Math.sin(rad)).toFixed(1)
+      };
+    }
+
+    /* gentle sag so the wires read as cables dropping into the Tower */
+    function wire(p) {
+      var mx = ((TX + p.x) / 2).toFixed(1);
+      var my = ((TY + p.y) / 2 + 24).toFixed(1);
+      return "M" + TX + " " + TY + " Q" + mx + " " + my + " " + p.x + " " + p.y;
+    }
+
+    var lines = "", beams = "", nodes = "";
+    crew.forEach(function (a, i) {
+      var p = pos(i), d = wire(p), c = RAI.color(a);
+      lines += '<path class="net-line" d="' + d + '"/>';
+      beams += '<path class="net-beam" data-agent="' + esc(a.id) + '" d="' + d +
+        '" stroke="' + c + '" style="color:' + c + '"/>';
+      nodes +=
+        '<a class="net-node" data-agent="' + esc(a.id) + '" href="agent.html?id=' + encodeURIComponent(a.id) +
+          '" aria-label="' + esc(a.name + " (" + a.codename + ") — open dossier") + '">' +
+          '<circle class="net-halo" cx="' + p.x + '" cy="' + p.y + '" r="17" fill="' + RAI.color(a, 62, 0.08) + '"/>' +
+          '<circle class="net-ring" cx="' + p.x + '" cy="' + p.y + '" r="11" fill="var(--ink-2)" stroke="' + c + '" stroke-opacity="0.5" stroke-width="1.5"/>' +
+          '<circle cx="' + p.x + '" cy="' + p.y + '" r="3.5" fill="' + c + '"/>' +
+          '<text class="net-lbl' + (i % 2 ? " net-lbl-alt" : "") + '" x="' + p.x + '" y="' + (p.y - 21) +
+            '" text-anchor="middle" fill="' + c + '">' + esc(a.codename) + "</text>" +
+        "</a>";
+    });
+
+    stage.innerHTML =
+      '<svg class="net-svg" viewBox="0 0 1100 300" role="group" aria-label="Live agent network — eleven specialists wired to the Tower">' +
+        '<g aria-hidden="true">' + lines + beams + "</g>" +
+        '<a class="net-tower" href="agent.html?id=' + encodeURIComponent(tower.id) +
+          '" aria-label="' + esc(tower.name + " (" + tower.codename + ") — open dossier") + '">' +
+          '<circle class="net-tower-pulse" cx="' + TX + '" cy="' + TY + '" r="26" fill="none" stroke="var(--gold)" stroke-width="1.2"/>' +
+          '<circle class="net-tring" cx="' + TX + '" cy="' + TY + '" r="21" fill="none" stroke="var(--gold)" stroke-opacity="0.55" stroke-width="1.4"/>' +
+          '<rect x="' + (TX - 13) + '" y="' + (TY - 13) + '" width="26" height="26" rx="5" fill="var(--ink-2)" stroke="var(--gold)" stroke-width="1.5" transform="rotate(45 ' + TX + " " + TY + ')"/>' +
+          '<g fill="none" stroke="var(--gold)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" transform="translate(' + (TX - 8) + " " + (TY - 8) + ') scale(0.67)" aria-hidden="true">' + tower.icon + "</g>" +
+          '<text class="net-lbl" x="' + TX + '" y="' + (TY + 44) + '" text-anchor="middle" fill="var(--gold)">' + esc(tower.codename) + "</text>" +
+        "</a>" +
+        nodes +
+      "</svg>";
+
+    var beamEls = {}, nodeEls = {};
+    stage.querySelectorAll(".net-beam").forEach(function (el) { beamEls[el.dataset.agent] = el; });
+    stage.querySelectorAll(".net-node").forEach(function (el) { nodeEls[el.dataset.agent] = el; });
+    var towerEl = stage.querySelector(".net-tower");
+
+    /* resting dash state: one pulse-length dash parked off-path */
+    Object.keys(beamEls).forEach(function (id) {
+      var b = beamEls[id];
+      var total = b.getTotalLength();
+      var dash = Math.min(170, Math.max(70, total * 0.3));
+      b.setAttribute("stroke-dasharray", dash + " " + Math.ceil(total + dash));
+      b.setAttribute("stroke-dashoffset", dash);
+      b.dataset.total = total;
+      b.dataset.dash = dash;
+    });
+
+    function pick(list) { return list[Math.floor(Math.random() * list.length)]; }
+
+    function caption(agent, text, instant) {
+      var html = '<span style="color:' + RAI.color(agent) + '">' + esc(agent.codename) + "</span> · " + esc(text);
+      if (instant) { cap.innerHTML = html; return; }
+      cap.classList.add("is-fading");
+      setTimeout(function () {
+        cap.innerHTML = html;
+        cap.classList.remove("is-fading");
+      }, 250);
+    }
+
+    /* first line on the wire */
+    var seed = (RAI.feed || []).length ? pick(RAI.feed) : null;
+    if (seed) caption(RAI.getAgent(seed.agentId) || tower, seed.text, true);
+
+    if (RAIUI.reduceMotion) return; /* static render: all lines visible, no timers */
+
+    function flash(el) {
+      if (!el) return;
+      el.classList.remove("net-flash");
+      void el.getBoundingClientRect();
+      el.classList.add("net-flash");
+      setTimeout(function () { el.classList.remove("net-flash"); }, 1000);
+    }
+
+    var lastIdx = -1;
+    function fire() {
+      var idx;
+      do { idx = Math.floor(Math.random() * crew.length); } while (crew.length > 1 && idx === lastIdx);
+      lastIdx = idx;
+      var a = crew[idx];
+      var beam = beamEls[a.id];
+
+      if (beam && beam.animate) {
+        var total = parseFloat(beam.dataset.total);
+        var dash = parseFloat(beam.dataset.dash);
+        beam.style.opacity = "1";
+        var sweep = beam.animate(
+          [{ strokeDashoffset: -total + "px" }, { strokeDashoffset: dash + "px" }],
+          { duration: 900, easing: "cubic-bezier(0.5, 0, 0.35, 1)" }
+        );
+        sweep.onfinish = function () { beam.style.opacity = "0"; };
+      }
+
+      flash(nodeEls[a.id]);
+      setTimeout(function () { flash(towerEl); }, 720);
+
+      var texts = feedBy[a.id];
+      if (texts && texts.length) caption(a, pick(texts));
+    }
+
+    (function loop() {
+      setTimeout(function () { fire(); loop(); }, 2500 + Math.random() * 1000);
+    })();
+  })();
+})();
+</script>
+</body>
+</html>

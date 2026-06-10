@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Playbooks — Real Estate Autopilot</title>
+<meta name="description" content="The slash-command library behind Devan Lunceford Real Estate, Indianapolis — 23 standing playbooks, who owns each one, what fires it, and how to run it.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23e3b54e'/%3E%3Ctext x='32' y='39' font-family='Arial' font-style='italic' font-weight='800' font-size='19' fill='%23070b14' text-anchor='middle'%3EREA%3C/text%3E%3C/svg%3E">
+<script>try{if(localStorage.getItem("rai-theme")==="light")document.documentElement.setAttribute("data-theme","light")}catch(e){}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400..800;1,400..800&family=Figtree:ital,wght@0,400..700;1,400..700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/core.css">
+<style>
+/* ===== playbooks.html — Playbooks (page-scoped) ===== */
+
+/* Hero */
+.pb-hero { padding-bottom: clamp(24px, 4vw, 48px); }
+.pb-hero-grid { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: clamp(32px, 6vw, 88px); align-items: end; }
+.pb-title { font-size: clamp(2.5rem, 5.4vw, 4.3rem); }
+.pb-hero .lede { margin-top: 24px; }
+
+.pb-stats { min-width: 196px; }
+.pb-stat { padding: 16px 0; border-top: 1px solid var(--line); text-align: right; display: grid; gap: 3px; }
+.pb-stat:first-child { border-top: 0; padding-top: 0; }
+.pb-stat:last-child { padding-bottom: 0; }
+.pb-num { font-family: var(--f-display); font-weight: 600; font-size: clamp(1.7rem, 2.4vw, 2.2rem); line-height: 1.05; color: var(--t-hi); }
+.pb-label { font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--t-low); }
+
+/* Filter bar */
+.pb-main { padding-top: 0; }
+.pb-bar { display: flex; align-items: center; justify-content: space-between; gap: 18px 28px; flex-wrap: wrap; margin-bottom: 36px; }
+.pb-filters { display: flex; flex-wrap: wrap; gap: 10px; }
+.pb-filter { padding: 8px 15px; transition: color 0.2s, border-color 0.2s, background-color 0.2s, transform 0.2s; }
+.pb-filter:hover { color: var(--t-hi); border-color: var(--line-strong); transform: translateY(-1px); }
+.pb-filter b { font-weight: 500; font-size: 9.5px; color: var(--t-low); }
+.pb-filter.tag-ac b { color: inherit; opacity: 0.6; }
+.pb-count { letter-spacing: 0.12em; text-transform: uppercase; }
+
+/* Grid */
+.pb-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; }
+
+/* Card */
+.pb-card {
+  display: flex; flex-direction: column;
+  scroll-margin-top: calc(var(--nav-h) + 28px);
+  outline: 2px solid transparent; outline-offset: 5px;
+}
+.pb-card[hidden] { display: none; }
+.pb-card.is-set { transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease, opacity 0.25s ease; transition-delay: 0s; }
+.pb-card.is-out { opacity: 0; transform: translateY(12px) scale(0.985); pointer-events: none; }
+
+/* deep-link flash */
+.pb-card.pb-flash { animation: pbFlash 1.6s ease 0.25s both; }
+@keyframes pbFlash {
+  0%, 100% { outline-color: transparent; }
+  14%, 60% { outline-color: var(--gold); box-shadow: var(--glow-gold), var(--shadow-2); }
+}
+
+.pb-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin-bottom: 15px; }
+.pb-cmd {
+  font-family: var(--f-label); font-weight: 600;
+  font-size: clamp(1.1rem, 1.6vw, 1.3rem); letter-spacing: 0.03em;
+  color: var(--ac); padding-top: 4px; word-break: break-all;
+  text-shadow: 0 0 22px color-mix(in srgb, var(--ac) 38%, transparent);
+}
+.pb-owner { display: inline-flex; align-items: center; gap: 10px; flex: none; }
+.pb-owner-code { letter-spacing: 0.18em; text-transform: uppercase; font-size: 10px; color: var(--t-low); transition: color 0.25s ease; }
+.pb-owner .avatar-sm { transition: transform 0.25s ease, box-shadow 0.25s ease; }
+.pb-owner:hover .pb-owner-code { color: var(--ac); }
+.pb-owner:hover .avatar-sm { transform: translateY(-2px); box-shadow: 0 0 26px color-mix(in srgb, var(--ac) 30%, transparent); }
+
+.pb-name { margin-bottom: 7px; }
+.pb-desc { color: var(--t-mid); font-size: 0.92rem; line-height: 1.55; min-height: calc(0.92rem * 1.55 * 2); margin-bottom: 20px; }
+.pb-div { margin: auto 0 14px; }
+
+.pb-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px 14px; flex-wrap: wrap; }
+.pb-trigger { max-width: 100%; }
+.pb-trigger svg { width: 12px; height: 12px; flex: none; }
+.pb-run {
+  display: inline-flex; align-items: center; gap: 7px; margin-left: auto;
+  font-size: 0.84rem; font-weight: 600; letter-spacing: 0.02em;
+  color: var(--t-mid); white-space: nowrap;
+  transition: color 0.25s ease;
+}
+.pb-run svg { width: 15px; height: 15px; transition: transform 0.25s ease; }
+.pb-card:hover .pb-run, .pb-run:hover { color: var(--ac); }
+.pb-card:hover .pb-run svg, .pb-run:hover svg { transform: translateX(4px); }
+
+/* CTA band */
+.pb-cta {
+  position: relative; overflow: hidden;
+  padding: clamp(34px, 5vw, 56px) clamp(28px, 5vw, 64px);
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 28px 40px; flex-wrap: wrap;
+}
+.pb-cta::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(560px 240px at 8% 0%, color-mix(in srgb, var(--gold) 8%, transparent), transparent 70%);
+}
+.pb-cta-copy { position: relative; max-width: 56ch; }
+.pb-cta-copy p { color: var(--t-mid); margin-top: 10px; }
+.pb-cta-cmds { margin-top: 20px; font-size: 9.5px; letter-spacing: 0.14em; color: var(--t-low); line-height: 2; }
+.pb-cta .btn { position: relative; flex: none; }
+
+/* Responsive */
+@media (max-width: 960px) {
+  .pb-hero-grid { grid-template-columns: 1fr; align-items: start; }
+  .pb-stats { display: flex; gap: 20px; min-width: 0; }
+  .pb-stat { border-top: 0; border-left: 1px solid var(--line); padding: 0 0 0 20px; text-align: left; }
+  .pb-stat:first-child { border-left: 0; padding-left: 0; }
+}
+@media (max-width: 860px) {
+  .pb-grid { grid-template-columns: 1fr; }
+  .pb-desc { min-height: 0; }
+}
+</style>
+</head>
+<body>
+
+<div class="bg" aria-hidden="true">
+  <div class="bg-grid"></div>
+  <div class="orb orb-a"></div>
+  <div class="orb orb-b"></div>
+  <div class="orb orb-c"></div>
+  <div class="bg-noise"></div>
+</div>
+
+<header class="nav">
+  <a class="nav-logo" href="index.html" aria-label="Real Estate Autopilot home">
+    <span class="logo-mark">REA</span>
+    <span class="logo-word">Real&nbsp;Estate&nbsp;<b>Autopilot</b></span>
+  </a>
+  <nav class="nav-links" aria-label="Primary">
+    <a href="index.html">Mission Control</a>
+    <a href="agents.html">Agents</a>
+    <a href="playbooks.html">Playbooks</a>
+    <a href="ops.html">Live Ops</a>
+  </nav>
+  <div class="nav-right">
+    <span class="status-chip"><i class="pulse-dot"></i>12 agents online</span>
+    <a class="btn btn-gold btn-sm" href="index.html#console">Deploy a task</a>
+  </div>
+</header>
+
+<main class="page">
+
+  <!-- Header -->
+  <section class="section pb-hero">
+    <div class="wrap">
+      <div class="pb-hero-grid">
+        <div>
+          <p class="eyebrow reveal">Playbooks</p>
+          <h1 class="h-display pb-title reveal" style="--d:.08s">One word.<br><em>A whole workflow.</em></h1>
+          <p class="lede reveal" style="--d:.16s">Every play here is a standing order — some fire on a schedule, some fire on an event, all of them run without being babysat. Say the word, or let the trigger catch it.</p>
+        </div>
+        <div class="pb-stats reveal" id="pbStats" style="--d:.24s"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Filter bar + grid -->
+  <section class="section-tight pb-main">
+    <div class="wrap">
+      <div class="pb-bar reveal">
+        <div class="pb-filters" id="pbFilters" role="group" aria-label="Filter playbooks by department"></div>
+        <span class="mono small faint pb-count" id="pbCount" aria-live="polite">23 / 23 shown</span>
+      </div>
+      <div class="pb-grid" id="pbGrid"></div>
+      <noscript><p class="mono small faint">Turn JavaScript on to load the playbooks.</p></noscript>
+    </div>
+  </section>
+
+  <!-- CTA band -->
+  <section class="section-tight">
+    <div class="wrap">
+      <div class="glass glass-notch pb-cta reveal">
+        <div class="pb-cta-copy">
+          <h2 class="h-2">Don't see the play?</h2>
+          <p>Brief the Tower in plain English. If a playbook fits, it runs. If not, the crew improvises.</p>
+          <p class="mono pb-cta-cmds" id="pbCmds" aria-hidden="true"></p>
+        </div>
+        <a class="btn btn-gold" href="index.html#console">Deploy a task</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <a class="nav-logo" href="index.html"><span class="logo-mark">REA</span></a>
+      <p>The twelve-agent operations team behind Devan Lunceford Real Estate, Indianapolis. One command post. Zero dropped balls.</p>
+    </div>
+    <div>
+      <h5>Platform</h5>
+      <nav class="footer-links">
+        <a href="index.html">Mission Control</a>
+        <a href="agents.html">The Roster</a>
+        <a href="playbooks.html">Playbooks</a>
+        <a href="ops.html">Live Ops</a>
+      </nav>
+    </div>
+    <div>
+      <h5>Command</h5>
+      <nav class="footer-links">
+        <a href="index.html#console">Deploy a task</a>
+        <a href="agents.html">Open a dossier</a>
+        <a href="playbooks.html">Run a playbook</a>
+        <a href="ops.html#feed">Watch the feed</a>
+      </nav>
+    </div>
+    <div class="footer-meta">
+      <span class="sys"><i class="pulse-dot"></i>All systems nominal</span>
+      <span>Real Estate Autopilot · Indianapolis · <span id="ft-year"></span></span>
+    </div>
+  </div>
+</footer>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/shared.js"></script>
+<script>
+(function () {
+  "use strict";
+  if (!window.RAI || !window.RAIUI) return;
+
+  var books = RAI.playbooks || [];
+  var grid = document.getElementById("pbGrid");
+  var filters = document.getElementById("pbFilters");
+  var countEl = document.getElementById("pbCount");
+  var statsEl = document.getElementById("pbStats");
+  var cmdsEl = document.getElementById("pbCmds");
+  if (!grid || !books.length) return;
+
+  var DEPTS = ["All", "Command", "Growth", "Marketing & Clients", "Operations", "Intelligence"];
+
+  function esc(s) {
+    return String(s).replace(/[&<>"]/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
+    });
+  }
+
+  /* ---- Hero stats (computed from the library) ---- */
+  var owners = {};
+  books.forEach(function (p) { owners[p.agentId] = true; });
+  if (statsEl) {
+    statsEl.innerHTML =
+      '<div class="pb-stat"><span class="pb-num" data-count="' + books.length + '">0</span><span class="pb-label mono">playbooks</span></div>' +
+      '<div class="pb-stat"><span class="pb-num" data-count="' + Object.keys(owners).length + '">0</span><span class="pb-label mono">owners</span></div>' +
+      '<div class="pb-stat"><span class="pb-num" data-count="24" data-suffix="/7">0</span><span class="pb-label mono">standing</span></div>';
+  }
+
+  /* ---- Trigger icons (schedule / event / spoken / drop-in) ---- */
+  var TRIG_ICONS = {
+    clock: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',
+    bolt: '<path d="M13 2 5 13h6l-1 9 9-12h-6l1-8z"/>',
+    chat: '<path d="M21 11.6a8.6 8.6 0 0 1-12.6 7.6L3.5 20.5l1.3-4.9A8.6 8.6 0 1 1 21 11.6z"/>',
+    drop: '<path d="M12 3v10m-4-4 4 4 4-4"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/>'
+  };
+  function trigIcon(t) {
+    var key = /^runs/i.test(t) ? "clock" : /^fires/i.test(t) ? "bolt" : /^drop/i.test(t) ? "drop" : "chat";
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + TRIG_ICONS[key] + "</svg>";
+  }
+
+  var ARROW = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
+
+  /* ---- Cards ---- */
+  grid.innerHTML = books.map(function (p, i) {
+    var a = RAI.getAgent(p.agentId);
+    if (!a) return "";
+    return '<div class="card pb-card reveal" id="' + esc(p.cmd.slice(1)) + '"' +
+      ' style="--ac:' + RAI.color(a) + ";--ac2:" + RAI.color(a, 75) + ";--d:" + ((i % 8) * 0.05).toFixed(2) + 's"' +
+      ' data-dept="' + esc(a.dept) + '">' +
+        '<span class="card-top" aria-hidden="true"></span>' +
+        '<div class="pb-head">' +
+          '<span class="pb-cmd">' + esc(p.cmd) + "</span>" +
+          '<a class="pb-owner" href="agent.html?id=' + encodeURIComponent(a.id) + '" aria-label="' + esc(a.codename + " — " + a.name + " — open dossier") + '">' +
+            '<span class="mono small pb-owner-code">' + esc(a.codename) + "</span>" +
+            '<span class="avatar avatar-sm"><svg viewBox="0 0 24 24" aria-hidden="true">' + a.icon + "</svg></span>" +
+          "</a>" +
+        "</div>" +
+        '<h3 class="h-3 pb-name">' + esc(p.name) + "</h3>" +
+        '<p class="pb-desc">' + esc(p.desc) + "</p>" +
+        '<hr class="hr-fade pb-div">' +
+        '<div class="pb-foot">' +
+          '<span class="tag pb-trigger">' + trigIcon(p.trigger) + esc(p.trigger) + "</span>" +
+          '<a class="pb-run" href="index.html?task=' + encodeURIComponent(p.name + " — run it") + '#console">Run it ' + ARROW + "</a>" +
+        "</div>" +
+      "</div>";
+  }).join("");
+
+  var cards = Array.prototype.slice.call(grid.querySelectorAll(".pb-card"));
+
+  /* Settle each card out of its reveal transition so hover and
+     filter fades stay snappy afterwards (same trick as the roster). */
+  function settle(card) { card.classList.add("is-set"); }
+
+  cards.forEach(function (card) {
+    if (RAIUI.reduceMotion) { settle(card); return; }
+    card.addEventListener("transitionend", function onEnd(e) {
+      if (e.target !== card || e.propertyName !== "opacity") return;
+      settle(card);
+      card.removeEventListener("transitionend", onEnd);
+    });
+    card.addEventListener("pointerenter", function () { settle(card); }, { once: true });
+  });
+
+  /* ---- Filters (mirrors agents.html) ---- */
+  var gen = 0;
+
+  function applyFilter(dept) {
+    gen++;
+    var g = gen;
+    var rm = RAIUI.reduceMotion;
+    var shown = 0;
+
+    cards.forEach(function (card) {
+      var match = dept === "All" || card.dataset.dept === dept;
+      if (match) {
+        var idx = shown++;
+        if (rm) { card.hidden = false; card.classList.remove("is-out"); return; }
+        if (card.hidden) {
+          card.hidden = false;
+          card.classList.add("is-out");
+        }
+        void card.offsetWidth;
+        card.style.transitionDelay = (idx * 0.03).toFixed(2) + "s";
+        card.classList.remove("is-out");
+        setTimeout(function () {
+          if (g === gen) card.style.transitionDelay = "";
+        }, 420 + idx * 30);
+      } else {
+        if (rm) { card.classList.add("is-out"); card.hidden = true; return; }
+        card.style.transitionDelay = "0s";
+        card.classList.add("is-out");
+        setTimeout(function () {
+          if (g === gen && card.classList.contains("is-out")) {
+            card.hidden = true;
+            card.style.transitionDelay = "";
+          }
+        }, 280);
+      }
+    });
+
+    if (countEl) countEl.textContent = shown + " / " + cards.length + " shown";
+  }
+
+  function activateFilter(dept) {
+    if (!filters) return;
+    filters.querySelectorAll(".pb-filter").forEach(function (b) {
+      var active = b.dataset.dept === dept;
+      b.classList.toggle("tag-ac", active);
+      b.setAttribute("aria-pressed", String(active));
+    });
+    cards.forEach(settle);
+    applyFilter(dept);
+  }
+
+  if (filters) {
+    var counts = {};
+    books.forEach(function (p) {
+      var a = RAI.getAgent(p.agentId);
+      if (a) counts[a.dept] = (counts[a.dept] || 0) + 1;
+    });
+
+    filters.innerHTML = DEPTS.map(function (d) {
+      var n = d === "All" ? cards.length : (counts[d] || 0);
+      var on = d === "All";
+      return '<button type="button" class="tag pb-filter' + (on ? " tag-ac" : "") + '"' +
+        ' data-dept="' + esc(d) + '" aria-pressed="' + on + '">' + esc(d) + " <b>" + n + "</b></button>";
+    }).join("");
+
+    filters.addEventListener("click", function (e) {
+      var btn = e.target.closest(".pb-filter");
+      if (!btn || btn.classList.contains("tag-ac")) return;
+      activateFilter(btn.dataset.dept);
+    });
+  }
+
+  if (countEl) countEl.textContent = cards.length + " / " + cards.length + " shown";
+
+  /* ---- CTA command strip ---- */
+  if (cmdsEl) {
+    cmdsEl.textContent = books.map(function (p) { return p.cmd; }).join(" · ");
+  }
+
+  /* ---- Deep links: playbooks.html#cma → scroll + gold flash ---- */
+  var flashTimer = null;
+
+  function flashHash() {
+    var id = location.hash.replace(/^#/, "");
+    if (!id) return;
+    var card = document.getElementById(id);
+    if (!card || !card.classList.contains("pb-card")) return;
+    if (card.hidden || card.classList.contains("is-out")) activateFilter("All");
+    card.classList.add("in");
+    settle(card);
+    card.scrollIntoView({ behavior: RAIUI.reduceMotion ? "auto" : "smooth", block: "start" });
+    card.classList.remove("pb-flash");
+    void card.offsetWidth;
+    card.classList.add("pb-flash");
+    clearTimeout(flashTimer);
+    flashTimer = setTimeout(function () { card.classList.remove("pb-flash"); }, 2100);
+  }
+
+  window.addEventListener("hashchange", flashHash);
+  if (location.hash) setTimeout(flashHash, 120);
+})();
+</script>
+</body>
+</html>

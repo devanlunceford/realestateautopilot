@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mission Control — Real Estate Autopilot</title>
+<meta name="description" content="Brief the Tower once and watch eleven specialist agents answer leads, launch listings, and run closings — live telemetry included.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23e3b54e'/%3E%3Ctext x='32' y='39' font-family='Arial' font-style='italic' font-weight='800' font-size='19' fill='%23070b14' text-anchor='middle'%3EREA%3C/text%3E%3C/svg%3E">
+<script>try{if(localStorage.getItem("rai-theme")==="light")document.documentElement.setAttribute("data-theme","light")}catch(e){}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400..800;1,400..800&family=Figtree:ital,wght@0,400..700;1,400..700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/core.css">
+<style>
+/* ============ index.html — Mission Control (page-scoped) ============ */
+
+/* ---------- Hero ---------- */
+.hero-grid{display:grid;grid-template-columns:minmax(0,1.32fr) minmax(0,1fr);gap:clamp(40px,6vw,76px);align-items:start}
+.hero-copy{padding-top:clamp(4px,2vw,32px)}
+.hero-copy .lede{margin-top:26px}
+.hero-cta{display:flex;gap:14px;margin-top:36px;flex-wrap:wrap}
+.hero-stats{margin-top:28px;letter-spacing:.08em}
+
+/* live "agents online" panel */
+.hero-panel{padding:24px 24px 16px;margin-top:clamp(0px,1.5vw,16px)}
+.lp-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-bottom:14px;border-bottom:1px solid var(--line)}
+.lp-label{display:inline-flex;align-items:center;gap:10px;font-family:var(--f-label);font-size:11px;font-weight:600;letter-spacing:.17em;text-transform:uppercase;color:var(--gold)}
+.lp-row{display:flex;gap:14px;align-items:center;padding:13px 2px;border-bottom:1px solid var(--line);animation:riseIn .6s cubic-bezier(.22,1,.36,1) both;animation-delay:var(--d,0s)}
+.lp-info{flex:1;min-width:0}
+.lp-name{font-size:.9rem;font-weight:600;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;row-gap:1px}
+.lp-name .codename{font-size:9.5px}
+.lp-action{color:var(--t-mid);font-size:11.5px;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:opacity .28s ease,transform .28s ease}
+.lp-action.swap{opacity:0;transform:translateY(4px)}
+.lp-more{display:inline-flex;align-items:center;gap:8px;margin:14px 2px 6px;font-size:13.5px;font-weight:500;color:var(--t-mid);transition:color .2s ease,gap .25s ease}
+.lp-more:hover{color:var(--gold-soft);gap:12px}
+
+/* ---------- Console ---------- */
+#console{scroll-margin-top:96px}
+.console-intro{margin-bottom:42px;max-width:640px}
+.console-intro .lede{margin-top:16px}
+.console-panel{max-width:940px;overflow:hidden}
+.console-head{display:flex;align-items:center;justify-content:space-between;gap:12px 16px;flex-wrap:wrap;padding:16px 22px;border-bottom:1px solid var(--line)}
+.console-head .status-chip{display:inline-flex}
+.console-id{display:flex;align-items:center;gap:16px;min-width:0}
+.console-id-tx{font-size:.95rem;font-weight:600;white-space:nowrap}
+.console-id-tx .codename{margin-left:2px}
+
+.thread{position:relative;min-height:340px;max-height:min(62vh,580px);overflow-y:auto;padding:24px;display:flex;flex-direction:column;gap:18px;background:color-mix(in srgb,var(--ink-0) 42%,transparent)}
+
+.msg{display:flex;gap:12px;max-width:84%}
+.msg-bot{align-self:flex-start}
+.msg-user{align-self:flex-end;max-width:78%}
+.msg-body{min-width:0;display:flex;flex-direction:column}
+.msg-user .msg-body{align-items:flex-end}
+.msg-meta{font-family:var(--f-label);font-weight:600;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--t-low);margin-bottom:6px}
+.bubble{background:color-mix(in srgb,var(--t-hi) 4%,transparent);border:1px solid var(--line);border-radius:14px 14px 14px 4px;padding:13px 16px;font-size:.95rem;line-height:1.6;color:var(--t-hi)}
+.bubble-user{background:color-mix(in srgb,var(--gold) 9%,transparent);border-color:color-mix(in srgb,var(--gold) 38%,transparent);border-radius:14px 14px 4px 14px}
+.bubble .followup{margin-top:10px;color:var(--t-mid)}
+.art-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.art-chips .tag{animation:popIn .45s cubic-bezier(.3,1.4,.5,1) both;animation-delay:var(--d,0s)}
+
+.typing{display:inline-flex;align-items:center;gap:5px;padding:3px 2px;margin-right:9px}
+.typing i{display:block;width:5px;height:5px;border-radius:50%;background:var(--t-mid);animation:tdot 1s ease-in-out infinite}
+.typing i:nth-child(2){animation-delay:.15s}
+.typing i:nth-child(3){animation-delay:.3s}
+
+/* thread blocks: routing strip + mission board */
+.tblock{width:100%;animation:riseIn .5s cubic-bezier(.22,1,.36,1) both}
+.route-kicker{letter-spacing:.24em;text-transform:uppercase;margin-bottom:12px}
+.route-strip{display:flex;align-items:flex-start;padding:2px 4px 6px}
+.rt-node{display:flex;flex-direction:column;align-items:center;gap:7px;animation:popIn .55s cubic-bezier(.3,1.4,.5,1) both;animation-delay:var(--d,0s)}
+.rt-node .codename{font-size:9px;letter-spacing:.16em}
+.rt-beam{flex:1;height:2px;margin:17px 10px 0;border-radius:2px;position:relative;overflow:hidden;transform-origin:left;animation:beamGrow .5s ease-out both;animation-delay:var(--d,0s)}
+.rt-beam i{position:absolute;top:0;bottom:0;left:0;width:45%;background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--t-hi) 70%,transparent),transparent);transform:translateX(-100%);animation:beamSweep 1.6s ease-in-out infinite;animation-delay:inherit}
+.route.settled .rt-beam i{animation:none;opacity:0}
+
+.mission{background:color-mix(in srgb,var(--ink-2) 72%,transparent);border:1px solid var(--line-strong);border-radius:var(--notch-sm);padding:20px 22px}
+.mb-head{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;padding-bottom:16px;border-bottom:1px solid var(--line);margin-bottom:16px}
+.mb-kicker{letter-spacing:.24em;text-transform:uppercase}
+.mb-name{font-family:var(--f-display);font-weight:600;font-size:1.15rem;letter-spacing:-.01em;margin-top:4px;line-height:1.25}
+.mb-tele{display:flex;align-items:center;gap:14px;flex:none}
+.mb-readout{display:flex;flex-direction:column;gap:2px;font-size:11.5px;line-height:1.4}
+.mb-pct{font-size:15px;font-weight:600;color:var(--gold)}
+.mb-steps{display:grid;gap:12px}
+.mb-step{border:1px solid var(--line);border-radius:var(--r-sm);padding:14px 16px;background:color-mix(in srgb,var(--ink-1) 55%,transparent);transition:border-color .4s ease,box-shadow .4s ease;animation:riseIn .5s ease both;animation-delay:calc(var(--i,0)*90ms)}
+.mb-step.live{border-color:color-mix(in srgb,var(--ac) 35%,transparent);box-shadow:0 0 24px color-mix(in srgb,var(--ac) 8%,transparent)}
+.mb-step.done{border-color:color-mix(in srgb,var(--signal) 28%,transparent);box-shadow:none}
+.mb-step-head{display:flex;align-items:center;gap:12px}
+.mb-step-head .st{margin-left:auto;flex:none}
+.mb-step-id{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;min-width:0}
+.mb-step-id strong{font-size:.92rem;font-weight:600}
+.mb-task{font-size:.86rem;color:var(--t-mid);margin:10px 0}
+.mb-step .log{display:none;margin-top:12px} /* .log telemetry stays dark in both themes (core.css) */
+.mb-step.live .log{display:block}
+
+/* suggestion chips + input */
+.console-chips{display:flex;flex-wrap:wrap;gap:10px;padding:16px 24px 4px;border-top:1px solid var(--line);transition:opacity .3s ease}
+.console-chips.off{opacity:.4;pointer-events:none}
+.chip-btn{font-family:var(--f-label);font-weight:600;font-size:11px;letter-spacing:.035em;color:var(--t-mid);border:1px solid var(--line);background:color-mix(in srgb,var(--t-hi) 3%,transparent);padding:8px 14px;border-radius:100px;transition:color .25s ease,border-color .25s ease,transform .25s ease}
+.chip-btn:hover{color:var(--gold-soft);border-color:color-mix(in srgb,var(--gold) 45%,transparent);transform:translateY(-1px)}
+.console-form{display:flex;gap:12px;padding:16px 24px 20px}
+.console-form input{flex:1;min-width:0;background:color-mix(in srgb,var(--ink-0) 72%,transparent);border:1px solid var(--line-strong);border-radius:var(--r-sm);padding:13px 16px;font-size:.95rem;transition:border-color .25s ease,box-shadow .25s ease}
+.console-form input::placeholder{color:var(--t-low)}
+.console-form input:focus{outline:none;border-color:color-mix(in srgb,var(--gold) 55%,transparent);box-shadow:0 0 0 3px color-mix(in srgb,var(--gold) 12%,transparent)}
+.console-form input[disabled]{opacity:.55}
+#consoleForm .btn[disabled]{opacity:.5;pointer-events:none}
+
+/* ---------- Roster preview ---------- */
+.crew-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:52px}
+.crew-card{display:block;color:inherit}
+.crew-head{display:flex;align-items:center;gap:16px}
+.crew-head>div{min-width:0}
+.crew-head .codename{display:inline-block;margin-top:3px}
+.crew-role{color:var(--t-mid);font-size:.9rem;line-height:1.55;margin:16px 0 18px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.crew-foot{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.crew-link{color:var(--t-low);transition:color .25s ease}
+.crew-card:hover .crew-link{color:var(--ac)}
+.crew-more{margin-top:44px}
+
+/* ---------- How it works ---------- */
+.how-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(28px,4vw,52px);margin-top:64px}
+.how-step{position:relative;padding-top:72px}
+.how-step:nth-child(2){margin-top:60px}
+.how-step:nth-child(3){margin-top:120px}
+.how-num{position:absolute;top:0;left:-6px;font-family:var(--f-display);font-style:italic;font-weight:480;font-size:clamp(4.4rem,7vw,6.4rem);line-height:1;color:color-mix(in srgb,var(--t-low) 26%,transparent);pointer-events:none;user-select:none}
+.how-step p{color:var(--t-mid);font-size:.95rem;margin-top:12px;max-width:34ch}
+
+/* ---------- Stats band ---------- */
+.stats-band{display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(20px,3vw,40px);padding:clamp(28px,4vw,46px) clamp(24px,4vw,52px)}
+.stat{padding-left:18px;border-left:1px solid var(--line)}
+.stat-num{font-family:var(--f-display);font-weight:600;font-size:clamp(1.9rem,3.4vw,2.7rem);line-height:1;color:var(--t-hi)}
+.stat-label{font-family:var(--f-label);font-weight:600;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--t-low);margin-top:10px}
+
+/* ---------- Keyframes ---------- */
+@keyframes riseIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes popIn{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:scale(1)}}
+@keyframes beamGrow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes beamSweep{0%{transform:translateX(-100%)}60%,100%{transform:translateX(330%)}}
+@keyframes tdot{0%,100%{opacity:.25;transform:translateY(0)}50%{opacity:1;transform:translateY(-3px)}}
+
+/* ---------- Responsive ---------- */
+@media (max-width:960px){
+  .hero-grid{grid-template-columns:minmax(0,1fr)}
+  .hero-panel{margin-top:8px}
+}
+@media (max-width:860px){
+  .how-grid{grid-template-columns:1fr;margin-top:48px}
+  .how-step:nth-child(2),.how-step:nth-child(3){margin-top:0}
+  .crew-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media (max-width:760px){
+  .stats-band{grid-template-columns:repeat(2,1fr)}
+}
+@media (max-width:640px){
+  .crew-grid{grid-template-columns:1fr}
+  .thread{min-height:260px;padding:18px}
+  .msg{max-width:92%}
+  .console-head{padding:14px 18px}
+  .console-chips{padding:14px 18px 2px}
+  .console-form{padding:14px 18px 18px;flex-wrap:wrap}
+  .console-form .btn{flex:1}
+}
+</style>
+</head>
+<body>
+
+<div class="bg" aria-hidden="true">
+  <div class="bg-grid"></div>
+  <div class="orb orb-a"></div>
+  <div class="orb orb-b"></div>
+  <div class="orb orb-c"></div>
+  <div class="bg-noise"></div>
+</div>
+
+<header class="nav">
+  <a class="nav-logo" href="index.html" aria-label="Real Estate Autopilot home">
+    <span class="logo-mark">REA</span>
+    <span class="logo-word">Real&nbsp;Estate&nbsp;<b>Autopilot</b></span>
+  </a>
+  <nav class="nav-links" aria-label="Primary">
+    <a href="index.html">Mission Control</a>
+    <a href="agents.html">Agents</a>
+    <a href="playbooks.html">Playbooks</a>
+    <a href="ops.html">Live Ops</a>
+  </nav>
+  <div class="nav-right">
+    <span class="status-chip"><i class="pulse-dot"></i>12 agents online</span>
+    <a class="btn btn-gold btn-sm" href="index.html#console">Deploy a task</a>
+  </div>
+</header>
+
+<main class="page">
+
+  <!-- ============ 1. HERO ============ -->
+  <section class="section">
+    <div class="wrap hero-grid">
+      <div class="hero-copy">
+        <p class="eyebrow reveal">MISSION CONTROL — INDIANAPOLIS</p>
+        <h1 class="h-display reveal" style="--d:.08s">Tell it once.<br><em>Watch it happen.</em></h1>
+        <p class="lede reveal" style="--d:.16s">One command post. Eleven specialist agents. Every lead answered, every listing launched, every closing on rails — while you're out showing homes.</p>
+        <div class="hero-cta reveal" style="--d:.24s">
+          <a class="btn btn-gold" href="#console">Deploy a task</a>
+          <a class="btn btn-ghost" href="agents.html">Meet the team</a>
+        </div>
+        <p class="mono small faint hero-stats reveal" style="--d:.32s">38s median speed-to-lead · 55 closings/yr pace · 24/7 coverage</p>
+      </div>
+      <aside class="hero-panel glass glass-notch reveal" style="--d:.2s" aria-label="Agents online — live">
+        <div class="lp-head">
+          <span class="lp-label"><i class="pulse-dot"></i>LIVE — THE ROSTER</span>
+          <span class="mono small faint">12 online</span>
+        </div>
+        <div id="lpRows"></div>
+        <a class="lp-more" href="agents.html">All twelve agents <span aria-hidden="true">→</span></a>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============ 2. CONSOLE ============ -->
+  <section class="section-tight" id="console">
+    <div class="wrap">
+      <div class="console-intro">
+        <p class="eyebrow reveal">THE CONSOLE</p>
+        <h2 class="h-1 reveal" style="--d:.08s">One brief. <em>The whole crew moves.</em></h2>
+        <p class="lede reveal" style="--d:.14s">TOWER reads your ask, picks the right specialists, and runs the clock. Everything below is live.</p>
+      </div>
+      <div class="console-panel glass glass-notch reveal" style="--d:.18s">
+        <div class="console-head">
+          <div class="console-id">
+            <span id="towerSlot"></span>
+            <span class="console-id-tx">Chief of Staff · <span class="codename">TOWER</span></span>
+          </div>
+          <span class="status-chip"><i class="pulse-dot"></i><span id="consoleStateTx">listening</span></span>
+        </div>
+        <div class="thread" id="thread" aria-label="Mission thread"></div>
+        <div class="console-chips" id="consoleChips"></div>
+        <form class="console-form" id="consoleForm" autocomplete="off">
+          <input id="consoleInput" type="text" placeholder='Brief the Tower — e.g. "price 4521 Maple Ave" or "new lead from Zillow"' aria-label="Brief the Tower">
+          <button class="btn btn-gold" type="submit" id="deployBtn">Deploy</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 3. ROSTER PREVIEW ============ -->
+  <section class="section">
+    <div class="wrap">
+      <p class="eyebrow reveal">THE CREW</p>
+      <h2 class="h-1 reveal" style="--d:.08s">Eleven specialists. <em>One Tower.</em></h2>
+      <p class="lede reveal" style="--d:.14s">Six of the twelve, each built for one job. Open a card for the full dossier.</p>
+      <div class="crew-grid" id="crewGrid"></div>
+      <div class="crew-more reveal">
+        <a class="btn btn-ghost" href="agents.html">See all twelve →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 4. HOW IT WORKS ============ -->
+  <section class="section">
+    <div class="wrap">
+      <p class="eyebrow reveal">HOW IT WORKS</p>
+      <h2 class="h-1 reveal" style="--d:.08s">Three moves. <em>Every time.</em></h2>
+      <div class="how-grid">
+        <article class="how-step reveal">
+          <span class="how-num" aria-hidden="true">01</span>
+          <h3 class="h-2">Brief the Tower</h3>
+          <p>Say it like you'd text a sharp assistant. "New lead from Zillow." "Price 4521 Maple Ave." That's the entire interface.</p>
+        </article>
+        <article class="how-step reveal" style="--d:.12s">
+          <span class="how-num" aria-hidden="true">02</span>
+          <h3 class="h-2">The crew deploys</h3>
+          <p>TOWER picks the agents, splits the work, and sets the clock. Three specialists in parallel beat one generalist every time.</p>
+        </article>
+        <article class="how-step reveal" style="--d:.24s">
+          <span class="how-num" aria-hidden="true">03</span>
+          <h3 class="h-2">Watch it land</h3>
+          <p>Live telemetry while it runs. Then the artifacts hit your desk — copy, timelines, numbers — ready to send.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 5. STATS BAND ============ -->
+  <section class="section-tight">
+    <div class="wrap">
+      <div class="stats-band glass reveal">
+        <div class="stat reveal" style="--d:.05s">
+          <div class="stat-num"><span data-count="55">0</span></div>
+          <div class="stat-label">Closings / yr pace</div>
+        </div>
+        <div class="stat reveal" style="--d:.13s">
+          <div class="stat-num"><span data-count="38" data-suffix="s">0</span></div>
+          <div class="stat-label">Median response</div>
+        </div>
+        <div class="stat reveal" style="--d:.21s">
+          <div class="stat-num"><span data-count="12">0</span></div>
+          <div class="stat-label">Agents on call</div>
+        </div>
+        <div class="stat reveal" style="--d:.29s">
+          <div class="stat-num"><span data-count="0" data-prefix="$">$0</span></div>
+          <div class="stat-label">Added payroll</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <a class="nav-logo" href="index.html"><span class="logo-mark">REA</span></a>
+      <p>The twelve-agent operations team behind Devan Lunceford Real Estate, Indianapolis. One command post. Zero dropped balls.</p>
+    </div>
+    <div>
+      <h5>Platform</h5>
+      <nav class="footer-links">
+        <a href="index.html">Mission Control</a>
+        <a href="agents.html">The Roster</a>
+        <a href="playbooks.html">Playbooks</a>
+        <a href="ops.html">Live Ops</a>
+      </nav>
+    </div>
+    <div>
+      <h5>Command</h5>
+      <nav class="footer-links">
+        <a href="index.html#console">Deploy a task</a>
+        <a href="agents.html">Open a dossier</a>
+        <a href="playbooks.html">Run a playbook</a>
+        <a href="ops.html#feed">Watch the feed</a>
+      </nav>
+    </div>
+    <div class="footer-meta">
+      <span class="sys"><i class="pulse-dot"></i>All systems nominal</span>
+      <span>Real Estate Autopilot · Indianapolis · <span id="ft-year"></span></span>
+    </div>
+  </div>
+</footer>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/shared.js"></script>
+<script>
+(function () {
+  "use strict";
+  var RAI = window.RAI, UI = window.RAIUI;
+  if (!RAI || !UI) return;
+  var RM = UI.reduceMotion;
+
+  function $id(s) { return document.getElementById(s); }
+  function el(tag, cls, html) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (html != null) n.innerHTML = html;
+    return n;
+  }
+  function esc(s) {
+    return String(s).replace(/[&<>"]/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
+    });
+  }
+  function avatar(agent, small) {
+    var d = el("div", small ? "avatar avatar-sm" : "avatar");
+    d.style.setProperty("--ac", RAI.color(agent));
+    d.style.setProperty("--ac2", RAI.color(agent, 75));
+    d.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true">' + agent.icon + "</svg>";
+    return d;
+  }
+
+  /* ============ Live bridge (additive — http(s) only, silent when absent) ============ */
+  var bridgeOnline = false;
+  (function bridgeProbe() {
+    if (location.protocol.indexOf("http") !== 0 || typeof fetch !== "function") return;
+    try {
+      var ctrl = new AbortController();
+      var timer = setTimeout(function () { ctrl.abort(); }, 1500);
+      fetch("/api/health", { signal: ctrl.signal }).then(function (res) {
+        clearTimeout(timer);
+        if (!res.ok) return null;
+        return res.json();
+      }).then(function (body) {
+        if (!body || !body.ok) return;
+        bridgeOnline = true;
+        var chip = document.querySelector(".console-head .status-chip");
+        if (!chip || !chip.parentNode) return;
+        var live = el("span", "status-chip",
+          '<i class="pulse-dot"></i>live link' + (body.fub ? " · FUB" : ""));
+        live.title = "Bridge connected — missions are logged to the local API";
+        chip.parentNode.insertBefore(live, chip.nextSibling);
+      }).catch(function () {});
+    } catch (e) { /* pure simulation */ }
+  })();
+
+  /* ============ Hero: live "agents online" panel ============ */
+  (function heroPanel() {
+    var host = $id("lpRows");
+    if (!host) return;
+    var ids = ["lead-concierge", "listing-marketer", "transaction-coordinator", "market-analyst", "investor-matcher", "bookkeeper"];
+    var rows = [];
+    ids.forEach(function (id, i) {
+      var a = RAI.getAgent(id);
+      if (!a) return;
+      var acts = RAI.feed.filter(function (f) { return f.agentId === id; }).map(function (f) { return f.text; });
+      if (!acts.length) acts = [a.role];
+      var row = el("div", "lp-row");
+      row.style.setProperty("--d", (0.12 + i * 0.09).toFixed(2) + "s");
+      row.appendChild(avatar(a, true));
+      var info = el("div", "lp-info");
+      info.appendChild(el("div", "lp-name",
+        esc(a.name) + ' <span class="codename" style="--ac:' + RAI.color(a) + '">' + esc(a.codename) + "</span>"));
+      var act = el("div", "lp-action mono small", esc(acts[i % acts.length]));
+      info.appendChild(act);
+      row.appendChild(info);
+      host.appendChild(row);
+      rows.push({ acts: acts, node: act, idx: i % acts.length });
+    });
+    if (RM || rows.length < 2) return;
+    var cursor = 0;
+    setInterval(function () {
+      var r = rows[cursor % rows.length];
+      cursor++;
+      r.node.classList.add("swap");
+      setTimeout(function () {
+        r.idx = (r.idx + 1) % r.acts.length;
+        r.node.textContent = r.acts[r.idx];
+        r.node.classList.remove("swap");
+      }, 300);
+    }, 3500);
+  })();
+
+  /* ============ Roster preview cards ============ */
+  (function crew() {
+    var host = $id("crewGrid");
+    if (!host) return;
+    var ids = ["lead-concierge", "listing-marketer", "transaction-coordinator", "market-analyst", "investor-matcher", "bookkeeper"];
+    ids.forEach(function (id, i) {
+      var a = RAI.getAgent(id);
+      if (!a) return;
+      var card = el("a", "card crew-card reveal");
+      card.href = "agent.html?id=" + a.id;
+      card.style.setProperty("--ac", RAI.color(a));
+      card.style.setProperty("--ac2", RAI.color(a, 75));
+      card.style.setProperty("--d", (i % 3 * 0.07).toFixed(2) + "s");
+      card.appendChild(el("span", "card-top"));
+      var head = el("div", "crew-head");
+      head.appendChild(avatar(a));
+      head.appendChild(el("div", "", '<div class="h-3">' + esc(a.name) + '</div><span class="codename">' + esc(a.codename) + "</span>"));
+      card.appendChild(head);
+      card.appendChild(el("p", "crew-role", esc(a.role)));
+      card.appendChild(el("div", "crew-foot",
+        '<span class="tag">' + esc(a.dept) + '</span><span class="crew-link mono small">Dossier →</span>'));
+      host.appendChild(card);
+    });
+  })();
+
+  /* ============ The console: mission engine ============ */
+  (function missionConsole() {
+    var thread = $id("thread"), form = $id("consoleForm"), input = $id("consoleInput"),
+        deploy = $id("deployBtn"), chipsHost = $id("consoleChips"),
+        stateTx = $id("consoleStateTx"), towerSlot = $id("towerSlot");
+    if (!thread || !form || !input) return;
+
+    var TOWER = RAI.getAgent("chief-of-staff");
+    if (!TOWER) return;
+    if (towerSlot) towerSlot.appendChild(avatar(TOWER, false));
+
+    var running = false;
+
+    function follow(force) {
+      var near = thread.scrollHeight - thread.scrollTop - thread.clientHeight < 120;
+      if (force || near) thread.scrollTop = thread.scrollHeight;
+    }
+
+    function metaHTML(who) {
+      return '<div class="msg-meta">' + who + " · " + UI.timeStamp() + "</div>";
+    }
+
+    function botMsg() {
+      var m = el("div", "msg msg-bot");
+      m.appendChild(avatar(TOWER, true));
+      var body = el("div", "msg-body", metaHTML("TOWER"));
+      var b = el("div", "bubble");
+      body.appendChild(b);
+      m.appendChild(body);
+      thread.appendChild(m);
+      follow(true);
+      return b;
+    }
+
+    function userMsg(text) {
+      var m = el("div", "msg msg-user");
+      var body = el("div", "msg-body", metaHTML("YOU"));
+      var b = el("div", "bubble bubble-user");
+      b.textContent = text;
+      body.appendChild(b);
+      m.appendChild(body);
+      thread.appendChild(m);
+      follow(true);
+    }
+
+    function stream(target, text, done) {
+      if (RM) {
+        target.textContent = text;
+        follow(true);
+        if (done) done();
+        return;
+      }
+      var words = text.split(/\s+/), i = 0;
+      var caret = el("span", "caret");
+      target.appendChild(caret);
+      var t = setInterval(function () {
+        if (i >= words.length) {
+          clearInterval(t);
+          caret.remove();
+          follow();
+          if (done) done();
+          return;
+        }
+        target.insertBefore(document.createTextNode(words[i] + " "), caret);
+        i++;
+        follow();
+      }, 28);
+    }
+
+    /* routing strip: TOWER → chosen agents, beam sweeping gold → agent color */
+    function routeStrip(steps) {
+      var block = el("div", "tblock route");
+      block.appendChild(el("div", "route-kicker mono small faint", "ROUTING"));
+      var strip = el("div", "route-strip");
+      var chain = [TOWER].concat(steps.map(function (s) { return RAI.getAgent(s.agentId); }));
+      chain.forEach(function (a, i) {
+        if (i > 0) {
+          var beam = el("div", "rt-beam");
+          beam.style.background = "linear-gradient(90deg, " +
+            RAI.color(chain[i - 1], 62, 0.85) + ", " + RAI.color(a, 62, 0.85) + ")";
+          beam.style.setProperty("--d", (i * 0.16 - 0.08).toFixed(2) + "s");
+          beam.appendChild(el("i"));
+          strip.appendChild(beam);
+        }
+        var node = el("div", "rt-node");
+        node.style.setProperty("--ac", RAI.color(a));
+        node.style.setProperty("--d", (i * 0.16).toFixed(2) + "s");
+        node.appendChild(avatar(a, true));
+        node.appendChild(el("span", "codename", esc(a.codename)));
+        strip.appendChild(node);
+      });
+      block.appendChild(strip);
+      thread.appendChild(block);
+      follow(true);
+      return block;
+    }
+
+    /* mission board: ring + timer + one task card per step */
+    function buildBoard(mission) {
+      var block = el("div", "tblock mission");
+      var head = el("div", "mb-head");
+      head.appendChild(el("div", "mb-title",
+        '<span class="mb-kicker mono small faint">MISSION</span><div class="mb-name">' + esc(mission.title) + "</div>"));
+      var tele = el("div", "mb-tele",
+        '<svg class="ring" viewBox="0 0 64 64" width="56" height="56" aria-hidden="true">' +
+        '<circle class="ring-track" cx="32" cy="32" r="28"/>' +
+        '<circle class="ring-fill" cx="32" cy="32" r="28"/></svg>' +
+        '<div class="mb-readout mono"><span class="mb-pct">0%</span>' +
+        '<span class="small faint">complete</span>' +
+        '<span class="mb-elapsed small faint">T+00:00</span></div>');
+      head.appendChild(tele);
+      block.appendChild(head);
+
+      var stepsHost = el("div", "mb-steps");
+      var steps = mission.steps.map(function (s, i) {
+        var a = RAI.getAgent(s.agentId);
+        var card = el("div", "mb-step");
+        card.style.setProperty("--ac", RAI.color(a));
+        card.style.setProperty("--ac2", RAI.color(a, 75));
+        card.style.setProperty("--i", i);
+        var h = el("div", "mb-step-head");
+        h.appendChild(avatar(a, true));
+        h.appendChild(el("div", "mb-step-id",
+          "<strong>" + esc(a.name) + '</strong><span class="codename">' + esc(a.codename) + "</span>"));
+        var st = el("span", "st st-queued", "queued");
+        h.appendChild(st);
+        card.appendChild(h);
+        card.appendChild(el("p", "mb-task", esc(s.task)));
+        var fill = el("div", "prog-fill");
+        var prog = el("div", "prog");
+        prog.appendChild(fill);
+        card.appendChild(prog);
+        var log = el("div", "log");
+        card.appendChild(log);
+        stepsHost.appendChild(card);
+        return { s: s, card: card, st: st, fill: fill, log: log, logIdx: 0, logTimer: null, started: false, done: false };
+      });
+      block.appendChild(stepsHost);
+      thread.appendChild(block);
+      follow(true);
+      return {
+        steps: steps,
+        ringFill: tele.querySelector(".ring-fill"),
+        pctEl: tele.querySelector(".mb-pct"),
+        elapsedEl: tele.querySelector(".mb-elapsed")
+      };
+    }
+
+    function logLine(ui, text, ok) {
+      ui.log.appendChild(el("div", "log-line" + (ok ? " ok" : ""),
+        '<span class="ts">' + UI.timeStamp() + '</span><span class="tx">' + esc(text) + "</span>"));
+      ui.log.scrollTop = ui.log.scrollHeight;
+      follow();
+    }
+
+    function startStep(ui) {
+      ui.started = true;
+      ui.card.classList.add("live");
+      ui.st.className = "st st-running";
+      ui.st.innerHTML = '<i class="st-dot"></i>running';
+      var space = (ui.s.eta * 1000) / (ui.s.logs.length + 1);
+      ui.logTimer = setInterval(function () {
+        if (ui.logIdx >= ui.s.logs.length) {
+          clearInterval(ui.logTimer);
+          ui.logTimer = null;
+          return;
+        }
+        logLine(ui, ui.s.logs[ui.logIdx++]);
+      }, space);
+    }
+
+    function finishStep(ui) {
+      ui.done = true;
+      if (ui.logTimer) { clearInterval(ui.logTimer); ui.logTimer = null; }
+      while (ui.logIdx < ui.s.logs.length) logLine(ui, ui.s.logs[ui.logIdx++]);
+      logLine(ui, "→ " + ui.s.artifact, true);
+      ui.fill.style.width = "100%";
+      ui.st.className = "st st-done";
+      ui.st.textContent = "done";
+      ui.card.classList.add("done");
+    }
+
+    function runBoard(mission, onDone) {
+      var board = buildBoard(mission);
+      if (RM) {
+        board.steps.forEach(function (ui) { ui.card.classList.add("live"); finishStep(ui); });
+        board.ringFill.style.strokeDashoffset = "0";
+        board.pctEl.textContent = "100%";
+        onDone(0);
+        return;
+      }
+      var t0 = performance.now(), lastSec = -1;
+      var tick = setInterval(function () {
+        var now = performance.now(), total = 0;
+        board.steps.forEach(function (ui) {
+          var pct = Math.min(Math.max((now - t0 - ui.s.delay) / (ui.s.eta * 1000), 0), 1);
+          total += pct;
+          if (pct > 0 && !ui.started) startStep(ui);
+          if (!ui.done) {
+            ui.fill.style.width = (pct * 100).toFixed(1) + "%";
+            if (pct >= 1) finishStep(ui);
+          }
+        });
+        var overall = total / board.steps.length;
+        board.pctEl.textContent = Math.round(overall * 100) + "%";
+        board.ringFill.style.strokeDashoffset = (175.9 * (1 - overall)).toFixed(1);
+        var sec = Math.floor((now - t0) / 1000);
+        if (sec !== lastSec) {
+          lastSec = sec;
+          board.elapsedEl.textContent = "T+" +
+            String(Math.floor(sec / 60)).padStart(2, "0") + ":" + String(sec % 60).padStart(2, "0");
+        }
+        if (board.steps.every(function (ui) { return ui.done; })) {
+          clearInterval(tick);
+          board.pctEl.textContent = "100%";
+          board.ringFill.style.strokeDashoffset = "0";
+          onDone(Math.max(1, Math.round((now - t0) / 1000)));
+        }
+      }, 110);
+    }
+
+    function completeMission(mission, secs) {
+      var b = botMsg();
+      var n = mission.steps.length;
+      var intro = (secs ? "Mission complete in " + secs + "s. " : "Mission complete. ") +
+        n + (n === 1 ? " artifact" : " artifacts") + " on your desk:";
+      stream(b, intro, function () {
+        var chips = el("div", "art-chips");
+        mission.steps.forEach(function (s, i) {
+          var a = RAI.getAgent(s.agentId);
+          var c = el("span", "tag tag-ac", esc(s.artifact));
+          c.style.setProperty("--ac", RAI.color(a));
+          c.style.setProperty("--d", (i * 0.09).toFixed(2) + "s");
+          chips.appendChild(c);
+        });
+        b.appendChild(chips);
+        follow(true);
+        setTimeout(function () {
+          b.appendChild(el("div", "followup", "Anything else?"));
+          follow(true);
+          setBusy(false);
+        }, RM ? 0 : 500);
+      });
+    }
+
+    function setBusy(busy) {
+      running = busy;
+      input.disabled = busy;
+      if (deploy) deploy.disabled = busy;
+      if (chipsHost) chipsHost.classList.toggle("off", busy);
+      if (stateTx) stateTx.textContent = busy ? "on mission" : "listening";
+      if (!busy) { try { input.focus({ preventScroll: true }); } catch (e) { input.focus(); } }
+    }
+
+    function submit(text) {
+      text = (text || "").trim();
+      if (!text || running) return;
+      setBusy(true);
+      input.value = "";
+      userMsg(text);
+      var mission = RAI.routeTask(text);
+      if (bridgeOnline) {
+        try {
+          fetch("/api/mission", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              title: mission.title,
+              task: text,
+              agents: mission.steps.map(function (s) { return s.agentId; })
+            })
+          }).catch(function () {});
+        } catch (e) { /* never disturbs the simulation */ }
+      }
+      var b = botMsg();
+      b.innerHTML = '<span class="typing"><i></i><i></i><i></i></span><span class="caret"></span>';
+      setTimeout(function () {
+        b.innerHTML = "";
+        stream(b, mission.brief, function () {
+          setTimeout(function () {
+            var strip = routeStrip(mission.steps);
+            setTimeout(function () {
+              runBoard(mission, function (secs) {
+                strip.classList.add("settled");
+                setTimeout(function () { completeMission(mission, secs); }, RM ? 0 : 450);
+              });
+            }, RM ? 0 : 650 + mission.steps.length * 160);
+          }, RM ? 0 : 350);
+        });
+      }, RM ? 60 : 900);
+    }
+
+    /* opening message */
+    botMsg().textContent = "Tower here. Give me a job — a new lead, a listing to launch, a closing to run — and watch the crew take it. Try one of the four below if you want a demo.";
+
+    /* suggestion chips */
+    if (chipsHost) {
+      RAI.canned.forEach(function (c) {
+        var btn = el("button", "chip-btn", esc(c.chip));
+        btn.type = "button";
+        btn.addEventListener("click", function () { submit(c.chip); });
+        chipsHost.appendChild(btn);
+      });
+    }
+
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      submit(input.value);
+    });
+
+    /* ?task= autorun — fires once; submit() guards re-entry */
+    var auto = UI.qsParam("task");
+    if (auto) {
+      input.value = auto;
+      setTimeout(function () { submit(auto); }, 700);
+    }
+  })();
+})();
+</script>
+</body>
+</html>
